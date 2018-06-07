@@ -1,5 +1,7 @@
 package net.juanlopes.ettree;
 
+import org.omg.CORBA.OBJ_ADAPTER;
+
 import java.util.Arrays;
 
 public class AVLForest<T extends Mergeable<T>> {
@@ -12,13 +14,8 @@ public class AVLForest<T extends Mergeable<T>> {
         left = new int[16];
         right = new int[16];
         height = new int[16];
-        value = newArray(16);
+        value = (T[]) new Mergeable[16];
         count = 0;
-    }
-
-    @SafeVarargs
-    private static <E> E[] newArray(int length, E... array) {
-        return Arrays.copyOf(array, length);
     }
 
     private void ensureSize(int size) {
