@@ -1,7 +1,5 @@
 package net.juanlopes.ettree;
 
-import org.omg.CORBA.OBJ_ADAPTER;
-
 import java.util.Arrays;
 
 public class AVLForest<T extends Mergeable<T>> {
@@ -82,10 +80,10 @@ public class AVLForest<T extends Mergeable<T>> {
         int root = findRightmost(node1);
         node1 = unlink(root);
 
-        return linkWithRoot(node1, node2, root);
+        return linkWithRoot(node1, root, node2);
     }
 
-    private int linkWithRoot(int node1, int node2, int root) {
+    public int linkWithRoot(int node1, int root, int node2) {
         node1 = adjustHeight(node1, node2, right);
         node2 = adjustHeight(node2, node1, left);
 
@@ -109,7 +107,7 @@ public class AVLForest<T extends Mergeable<T>> {
     }
 
     private int adjustHeight(int node1, int node2, int[] dir) {
-        while (height(node1) - height(node2) > 1)
+        while (node1 >= 0 && dir[node1] >= 0 && height(node1) - height(node2) > 1)
             node1 = dir[node1];
         return node1;
     }
@@ -201,7 +199,7 @@ public class AVLForest<T extends Mergeable<T>> {
     public String toString() {
         boolean[] visited = new boolean[count];
         StringBuilder builder = new StringBuilder();
-        builder.append("digraph{");
+        builder.append("digraph{graph[ordering=\"out\"];");
 
         for (int i = 0; i < count; i++) {
             builder.append("v").append(i).append("[label=\"").append(value[i]).append("\"];");
@@ -216,17 +214,17 @@ public class AVLForest<T extends Mergeable<T>> {
     }
 
     private void print(StringBuilder builder, boolean visited[], int v) {
-        if (visited[v]) {
-            builder.append("/bug/");
-            return;
-        }
+        assert !visited[v];
+
         visited[v] = true;
         if (left[v] >= 0) {
+            assert parent[left[v]] == v;
             builder.append("v").append(v).append("->").append("v").append(left[v]).append(";");
             print(builder, visited, left[v]);
         }
 
         if (right[v] >= 0) {
+            assert parent[right[v]] == v;
             builder.append("v").append(v).append("->").append("v").append(right[v]).append(";");
             print(builder, visited, right[v]);
         }
@@ -245,26 +243,35 @@ public class AVLForest<T extends Mergeable<T>> {
         int rightTree = keepLeft ? right[node] : -1;
 
         while (node >= 0) {
-            System.out.println(node);
+            int parent = parent(node);
+            boolean newKeepLeft = parent >= 0 && right[parent] == node;
             if (keepLeft) {
                 int tree = left[node];
-                unlinkChildren(node);
-                leftTree = linkWithRoot(tree, leftTree, node);
+                leftTree = linkWithRoot(tree, unlinkAll(node), leftTree);
             } else {
                 int tree = right[node];
-                unlinkChildren(node);
-                rightTree = linkWithRoot(rightTree, tree, node);
+                rightTree = linkWithRoot(rightTree, unlinkAll(node), tree);
             }
-            int last = node;
-            node = parent(node);
-            keepLeft = node >= 0 && right[node] == last;
+            node = parent;
+            keepLeft = newKeepLeft;
         }
 
     }
 
-    private void unlinkChildren(int node) {
-        left[node] = -1;
-        right[node] = -1;
-        update(node);
+    private int unlinkAll(int node) {
+        if (left[node] >= 0) {
+            parent[left[node]] = -1;
+            left[node] = -1;
+        }
+        if (right[node] >= 0) {
+            parent[right[node]] = -1;
+            right[node] = -1;
+        }
+        if (parent[node] >= 0 && left[parent[node]] == node)
+            left[parent[node]] = -1;
+        if (parent[node] >= 0 && right[parent[node]] == node)
+            right[parent[node]] = -1;
+        parent[node] = -1;
+        return node;
     }
 }
