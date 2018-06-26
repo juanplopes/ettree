@@ -13,6 +13,7 @@ public class ForestAssert {
     private final List<List<Integer>> components = new ArrayList<>();
 
     public ForestAssert component(int... nodes) {
+        if (nodes.length == 0) return this;
         components.add(IntStream.of(nodes).boxed().collect(Collectors.toList()));
         return this;
     }

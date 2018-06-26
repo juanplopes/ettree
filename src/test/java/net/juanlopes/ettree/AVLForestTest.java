@@ -136,7 +136,9 @@ public class AVLForestTest {
         for (int i = 0; i < 13; i++)
             forest.link(i, i + 1);
 
-        forest.cutToLeft(6);
+        int cut = forest.cutToLeft(6);
+        assertThat(cut).isEqualTo(forest.rootOf(7));
+
         new ForestAssert()
                 .component(0, 1, 2, 3, 4, 5, 6)
                 .component(7, 8, 9, 10, 11, 12, 13)
@@ -152,10 +154,42 @@ public class AVLForestTest {
         for (int i = 0; i < 13; i++)
             forest.link(i, i + 1);
 
-        forest.cutToRight(6);
+        int cut = forest.cutToRight(6);
+        assertThat(cut).isEqualTo(forest.rootOf(5));
+
         new ForestAssert()
                 .component(0, 1, 2, 3, 4, 5)
                 .component(6, 7, 8, 9, 10, 11, 12, 13)
+                .check(forest);
+    }
+
+    @Test
+    public void testCutLeftEdge() {
+        AVLForest<Slot> forest = new AVLForest<>();
+
+        addMany(forest, 14);
+
+        for (int i = 0; i < 13; i++)
+            forest.link(i, i + 1);
+
+        assertThat(forest.cutToLeft(13)).isEqualTo(-1);
+        new ForestAssert()
+                .component(range(0, 14))
+                .check(forest);
+    }
+
+    @Test
+    public void testCutRightEdge() {
+        AVLForest<Slot> forest = new AVLForest<>();
+
+        addMany(forest, 14);
+
+        for (int i = 0; i < 13; i++)
+            forest.link(i, i + 1);
+
+        assertThat(forest.cutToRight(0)).isEqualTo(-1);
+        new ForestAssert()
+                .component(range(0, 14))
                 .check(forest);
     }
 
@@ -170,8 +204,12 @@ public class AVLForestTest {
             forest.link(i, i + 1);
 
         new ForestAssert()
-                .component(IntStream.range(0, 31).toArray())
+                .component(range(0, 31))
                 .check(forest);
+    }
+
+    private int[] range(int start, int end) {
+        return IntStream.range(start, end).toArray();
     }
 
     @Test
@@ -189,10 +227,10 @@ public class AVLForestTest {
             forest.link(i, i + 1);
 
         new ForestAssert()
-                .component(IntStream.range(0, 8).toArray())
-                .component(IntStream.range(8, 16).toArray())
-                .component(IntStream.range(16, 24).toArray())
-                .component(IntStream.range(24, 31).toArray())
+                .component(range(0, 8))
+                .component(range(8, 16))
+                .component(range(16, 24))
+                .component(range(24, 31))
                 .check(forest);
 
 
@@ -201,9 +239,47 @@ public class AVLForestTest {
         forest.link(0, 30);
 
         new ForestAssert()
-                .component(IntStream.range(0, 31).toArray())
+                .component(range(0, 31))
                 .check(forest);
     }
 
+    @Test
+    public void testCutInSeveralPoints() throws Exception {
+        int N = 32;
+        for (int i = 0; i < N; i++) {
+            AVLForest<Slot> forest = new AVLForest<>();
+
+            addMany(forest, N);
+            for (int j = 0; j < N - 1; j++)
+                forest.link(j, j + 1);
+
+            forest.cutToLeft(i);
+
+            new ForestAssert()
+                    .component(range(0, i + 1))
+                    .component(range(i + 1, N))
+                    .check(forest);
+        }
+    }
+
+    @Test
+    public void testCutInSeveralPointsRight() throws Exception {
+        int N = 32;
+        for (int i = 0; i < N; i++) {
+            AVLForest<Slot> forest = new AVLForest<>();
+
+            addMany(forest, N);
+            for (int j = 0; j < N - 1; j++)
+                forest.link(j, j + 1);
+
+            forest.cutToRight(i);
+
+            new ForestAssert()
+                    .component(range(0, i))
+                    .component(range(i, N))
+                    .check(forest);
+
+        }
+    }
 }
 

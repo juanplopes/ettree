@@ -77,12 +77,12 @@ public class AVLForest<T extends Mergeable<T>> {
         return linkByRoot(rootOf(node1), rootOf(node2));
     }
 
-    public void cutToRight(int node) {
-        cut(node, false);
+    public int cutToRight(int node) {
+        return cut(node, false);
     }
 
-    public void cutToLeft(int node) {
-        cut(node, true);
+    public int cutToLeft(int node) {
+        return cut(node, true);
     }
 
 
@@ -225,7 +225,8 @@ public class AVLForest<T extends Mergeable<T>> {
         return temp;
     }
 
-    private void cut(int node, boolean keepLeft) {
+    private int cut(int node, boolean keepLeft) {
+        boolean returnRight = keepLeft;
         int leftTree = keepLeft ? -1 : left[node];
         int rightTree = keepLeft ? right[node] : -1;
 
@@ -242,7 +243,7 @@ public class AVLForest<T extends Mergeable<T>> {
             node = parent;
             keepLeft = newKeepLeft;
         }
-
+        return returnRight ? rightTree : leftTree;
     }
 
     private int unlinkAll(int node) {
