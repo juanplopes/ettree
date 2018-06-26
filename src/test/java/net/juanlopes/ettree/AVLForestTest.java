@@ -36,6 +36,19 @@ public class AVLForestTest {
     }
 
     @Test
+    public void testBalancedCut() {
+        AVLForest<Slot> forest = new AVLForest<>();
+
+        addMany(forest, 14);
+
+        for (int i = 0; i < 13; i++)
+            forest.link(i, i + 1);
+
+        forest.cutToLeft(6);
+        System.out.println(forest.toString());
+    }
+
+    @Test
     public void testSimpleBalanceMore() {
         AVLForest<Slot> forest = new AVLForest<>();
 

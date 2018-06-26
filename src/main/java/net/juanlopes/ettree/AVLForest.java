@@ -55,7 +55,7 @@ public class AVLForest<T extends Mergeable<T>> {
     }
 
     public int rootOf(int node) {
-        while (parent[node] >= 0) {
+        while (parent(node) >= 0) {
             node = parent[node];
         }
         return node;
@@ -160,7 +160,7 @@ public class AVLForest<T extends Mergeable<T>> {
     }
 
     private int balance(int node) {
-        if (node == -1) return -1;
+        if (node < 0) return -1;
         int rootFactor = factor(node);
         if (rootFactor < -1) {
             if (factor(left[node]) > 0) {
@@ -221,14 +221,50 @@ public class AVLForest<T extends Mergeable<T>> {
             return;
         }
         visited[v] = true;
-        if (left[v] != -1) {
+        if (left[v] >= 0) {
             builder.append("v").append(v).append("->").append("v").append(left[v]).append(";");
             print(builder, visited, left[v]);
         }
 
-        if (right[v] != -1) {
+        if (right[v] >= 0) {
             builder.append("v").append(v).append("->").append("v").append(right[v]).append(";");
             print(builder, visited, right[v]);
         }
+    }
+
+    public void cutToRight(int node) {
+        cut(node, false);
+    }
+
+    public void cutToLeft(int node) {
+        cut(node, true);
+    }
+
+    private void cut(int node, boolean keepLeft) {
+        int leftTree = keepLeft ? -1 : left[node];
+        int rightTree = keepLeft ? right[node] : -1;
+
+        while (node >= 0) {
+            System.out.println(node);
+            if (keepLeft) {
+                int tree = left[node];
+                unlinkChildren(node);
+                leftTree = linkWithRoot(tree, leftTree, node);
+            } else {
+                int tree = right[node];
+                unlinkChildren(node);
+                rightTree = linkWithRoot(rightTree, tree, node);
+            }
+            int last = node;
+            node = parent(node);
+            keepLeft = node >= 0 && right[node] == last;
+        }
+
+    }
+
+    private void unlinkChildren(int node) {
+        left[node] = -1;
+        right[node] = -1;
+        update(node);
     }
 }
