@@ -31,6 +31,10 @@ public class AVLForest<T extends Mergeable<T>> {
         return count;
     }
 
+    public T value(int node) {
+        return value[node];
+    }
+
     public int height(int node) {
         if (node < 0) return 0;
         return height[node];
@@ -39,6 +43,23 @@ public class AVLForest<T extends Mergeable<T>> {
     public int parent(int node) {
         if (node < 0) return -1;
         return parent[node];
+    }
+
+    public int left(int node) {
+        if (node < 0) return -1;
+        return left[node];
+    }
+
+    public int right(int node) {
+        if (node < 0) return -1;
+        return right[node];
+    }
+
+    public int rootOf(int node) {
+        while (parent(node) >= 0) {
+            node = parent[node];
+        }
+        return node;
     }
 
     public int add(T obj) {
@@ -52,15 +73,39 @@ public class AVLForest<T extends Mergeable<T>> {
         return index;
     }
 
-    public int rootOf(int node) {
-        while (parent(node) >= 0) {
-            node = parent[node];
-        }
-        return node;
-    }
-
     public int link(int node1, int node2) {
         return linkByRoot(rootOf(node1), rootOf(node2));
+    }
+
+    public void cutToRight(int node) {
+        cut(node, false);
+    }
+
+    public void cutToLeft(int node) {
+        cut(node, true);
+    }
+
+
+    public void notifyUpdate(int node) {
+        while (node >= 0) {
+            update(node);
+            node = parent(node);
+        }
+    }
+
+    public int linkWithRoot(int node1, int root, int node2) {
+        node1 = adjustHeight(node1, node2, right);
+        node2 = adjustHeight(node2, node1, left);
+
+        int p1 = parent(node1), p2 = parent(node2);
+
+        left[root] = node1;
+        right[root] = node2;
+        update(root);
+
+        reroot(root, p1, right);
+        reroot(root, p2, left);
+        return balanceTree(root);
     }
 
     private int unlink(int node) {
@@ -81,21 +126,6 @@ public class AVLForest<T extends Mergeable<T>> {
         node1 = unlink(root);
 
         return linkWithRoot(node1, root, node2);
-    }
-
-    public int linkWithRoot(int node1, int root, int node2) {
-        node1 = adjustHeight(node1, node2, right);
-        node2 = adjustHeight(node2, node1, left);
-
-        int p1 = parent(node1), p2 = parent(node2);
-
-        left[root] = node1;
-        right[root] = node2;
-        update(root);
-
-        reroot(root, p1, right);
-        reroot(root, p2, left);
-        return balanceTree(root);
     }
 
     private void reroot(int root, int p1, int[] side) {
@@ -195,49 +225,6 @@ public class AVLForest<T extends Mergeable<T>> {
         return temp;
     }
 
-    @Override
-    public String toString() {
-        boolean[] visited = new boolean[count];
-        StringBuilder builder = new StringBuilder();
-        builder.append("digraph{graph[ordering=\"out\"];");
-
-        for (int i = 0; i < count; i++) {
-            builder.append("v").append(i).append("[label=\"").append(value[i]).append("\"];");
-        }
-        for (int i = 0; i < count; i++) {
-            int root = rootOf(i);
-            if (!visited[root])
-                print(builder, visited, root);
-        }
-
-        return builder.append("}").toString();
-    }
-
-    private void print(StringBuilder builder, boolean visited[], int v) {
-        assert !visited[v];
-
-        visited[v] = true;
-        if (left[v] >= 0) {
-            assert parent[left[v]] == v;
-            builder.append("v").append(v).append("->").append("v").append(left[v]).append(";");
-            print(builder, visited, left[v]);
-        }
-
-        if (right[v] >= 0) {
-            assert parent[right[v]] == v;
-            builder.append("v").append(v).append("->").append("v").append(right[v]).append(";");
-            print(builder, visited, right[v]);
-        }
-    }
-
-    public void cutToRight(int node) {
-        cut(node, false);
-    }
-
-    public void cutToLeft(int node) {
-        cut(node, true);
-    }
-
     private void cut(int node, boolean keepLeft) {
         int leftTree = keepLeft ? -1 : left[node];
         int rightTree = keepLeft ? right[node] : -1;
@@ -274,4 +261,5 @@ public class AVLForest<T extends Mergeable<T>> {
         parent[node] = -1;
         return node;
     }
+
 }
