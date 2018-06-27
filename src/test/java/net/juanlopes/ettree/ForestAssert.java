@@ -26,7 +26,7 @@ public class ForestAssert {
 
     public static void assertInvariants(AVLForest<Slot> forest) {
         for (int i = 0; i < forest.count(); i++) {
-            if (i == forest.rootOf(i)) {
+            if (forest.isRoot(i)) {
                 assertInvariants(forest, -1, i);
             }
         }
@@ -61,7 +61,7 @@ public class ForestAssert {
     public static Set<List<Integer>> makeComponents(AVLForest<?> forest) {
         Set<List<Integer>> set = new HashSet<>();
         for (int i = 0; i < forest.count(); i++) {
-            if (i == forest.rootOf(i)) {
+            if (forest.isRoot(i)) {
                 List<Integer> comp = new ArrayList<>();
                 makeComponent(comp, forest, i);
                 set.add(comp);
@@ -88,7 +88,7 @@ public class ForestAssert {
 
         boolean[] visited = new boolean[forest.count()];
         for (int i = 0; i < forest.count(); i++) {
-            if (i == forest.rootOf(i))
+            if (forest.isRoot(i))
                 print(builder, forest, -1, i);
         }
 

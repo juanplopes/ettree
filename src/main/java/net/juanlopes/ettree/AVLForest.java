@@ -3,18 +3,13 @@ package net.juanlopes.ettree;
 import java.util.Arrays;
 
 public class AVLForest<T extends Mergeable<T>> {
-    private int[] parent, left, right, height;
-    private T[] value;
-    private int count;
-
-    public AVLForest() {
-        parent = new int[16];
-        left = new int[16];
-        right = new int[16];
-        height = new int[16];
-        value = (T[]) new Mergeable[16];
-        count = 0;
-    }
+    private int[] parent = new int[16];
+    private int[] left = new int[16];
+    private int[] right = new int[16];
+    private int[] height = new int[16];
+    private T[] value = (T[]) new Mergeable[16];
+    private int count = 0;
+    private IntQueue removed = new IntQueue();
 
     private void ensureSize(int size) {
         int newSize = 2 * Integer.highestOneBit(size - 1);
@@ -29,6 +24,14 @@ public class AVLForest<T extends Mergeable<T>> {
 
     public int count() {
         return count;
+    }
+
+    public boolean isRemoved(int node) {
+        return value[node] == null;
+    }
+
+    public boolean isRoot(int node) {
+        return !isRemoved(node) && rootOf(node) == node;
     }
 
     public T value(int node) {
@@ -63,14 +66,31 @@ public class AVLForest<T extends Mergeable<T>> {
     }
 
     public int add(T obj) {
-        ensureSize(count + 1);
-        int index = count++;
+        assert obj != null;
+
+        int index = getNextIndex();
         parent[index] = -1;
         left[index] = -1;
         right[index] = -1;
         height[index] = 1;
         value[index] = obj;
         return index;
+    }
+
+    private int getNextIndex() {
+        if (!removed.isEmpty())
+            return removed.pop();
+
+        ensureSize(count + 1);
+        return count++;
+    }
+
+    public int remove(int node) {
+        removed.push(node);
+        int left = cutToRight(node);
+        int right = cutToLeft(node);
+        value[node] = null;
+        return linkByRoot(left, right);
     }
 
     public int link(int node1, int node2) {
@@ -122,6 +142,9 @@ public class AVLForest<T extends Mergeable<T>> {
     }
 
     private int linkByRoot(int node1, int node2) {
+        if (node1 < 0) return node2;
+        if (node2 < 0) return node1;
+
         int root = findRightmost(node1);
         node1 = unlink(root);
 

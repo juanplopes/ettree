@@ -72,6 +72,29 @@ public class AVLForestTest {
     }
 
     @Test
+    public void testRemove() {
+        AVLForest<Slot> forest = new AVLForest<>();
+
+        addMany(forest, 7);
+
+        for (int i = 0; i < 6; i++)
+            forest.link(i, i + 1);
+
+        forest.remove(3);
+
+        new ForestAssert()
+                .component(0, 1, 2, 4, 5, 6)
+                .check(forest);
+
+        assertThat(forest.add(new Slot(42))).isEqualTo(3);
+
+        new ForestAssert()
+                .component(0, 1, 2, 4, 5, 6)
+                .component(3)
+                .check(forest);
+    }
+
+    @Test
     public void testLinkWithRootSingleLeft() throws Exception {
         AVLForest<Slot> forest = new AVLForest<>();
 
