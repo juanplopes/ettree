@@ -35,17 +35,14 @@ public class ETTree<T extends Mergeable<T>> {
     }
 
     public long addEdge(int node1, int node2, T forward, T backward) {
-        node1 = nodes[node1];
-        node2 = nodes[node2];
-
-        node1 = reroot(node1);
-
-        int parentRight = avl.cutToLeft(node2);
+        int left = nodes[node1];
+        int mid = reroot(nodes[node2]);
+        int right = avl.cutToLeft(left);
 
         int a = avl.add(forward);
         int b = avl.add(backward);
 
-        avl.link(avl.link(node2, a, node1), b, parentRight);
+        avl.link(avl.link(left, a, mid), b, right);
 
         return (long) a << 32 | b;
     }
