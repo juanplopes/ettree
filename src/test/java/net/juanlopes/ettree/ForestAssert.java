@@ -83,7 +83,8 @@ public class ForestAssert {
         builder.append("digraph{graph[ordering=\"out\"];");
 
         for (int i = 0; i < forest.count(); i++) {
-            builder.append("v").append(i).append("[label=\"").append(forest.value(i)).append("\"];");
+            if (!forest.isRemoved(i))
+                builder.append("v").append(i).append("[label=\"").append(forest.value(i)).append("\"];");
         }
 
         boolean[] visited = new boolean[forest.count()];

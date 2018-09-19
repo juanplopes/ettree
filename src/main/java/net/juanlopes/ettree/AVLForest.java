@@ -66,7 +66,7 @@ public class AVLForest<T extends Mergeable<T>> {
     }
 
     public int add(T obj) {
-        assert obj != null;
+//        assert obj != null;
 
         int index = getNextIndex();
         parent[index] = -1;
@@ -95,6 +95,10 @@ public class AVLForest<T extends Mergeable<T>> {
 
     public int link(int node1, int node2) {
         return linkByRoot(rootOf(node1), rootOf(node2));
+    }
+
+    public int link(int node1, int parent, int node2) {
+        return linkWithRoot(rootOf(node1), parent, rootOf(node2));
     }
 
     public int cutToRight(int node) {
