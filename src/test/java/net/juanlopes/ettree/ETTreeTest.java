@@ -22,12 +22,10 @@ public class ETTreeTest {
         ETTree<Slot> tree = new ETTree<>(() -> new Slot(0));
         int K = 30;
         int[] nodes = new int[2 * K];
-        for (int i = 0; i < nodes.length; i++)
+        for (int i = 0; i < nodes.length; i++) {
             nodes[i] = tree.addNode(new Slot(i + 1));
-
-        for (int i = 0; i < nodes.length - 2; i += 2) {
-            tree.addEdge(nodes[i], nodes[i + 2]);
-            tree.addEdge(nodes[i + 1], nodes[i + 3]);
+            if (i >= 2)
+                tree.addEdge(nodes[i], nodes[i - 2]);
         }
 
         int comp1 = tree.findRoot(nodes[0]);
@@ -61,7 +59,6 @@ public class ETTreeTest {
         assertThat(tree.findValue(nodes[0]).sum()).isEqualTo(K * K);
         assertThat(tree.findValue(nodes[1]).sum()).isEqualTo(K * K + K);
     }
-
 
 
 }
