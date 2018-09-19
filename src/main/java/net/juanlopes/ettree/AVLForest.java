@@ -66,7 +66,7 @@ public class AVLForest<T extends Mergeable<T>> {
     }
 
     public int add(T obj) {
-//        assert obj != null;
+        assert obj != null;
 
         int index = getNextIndex();
         parent[index] = -1;
