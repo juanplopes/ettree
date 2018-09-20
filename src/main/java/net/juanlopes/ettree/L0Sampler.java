@@ -1,10 +1,11 @@
 package net.juanlopes.ettree;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
 
-public class L0Sampler {
-    private final int P = 2147483647;
+public class L0Sampler implements Mergeable<L0Sampler> {
+    private static final int P = 2147483647;
     private final int[] W0, W1, W2, Z;
     private final int seed;
     private final int m, d;
@@ -52,7 +53,7 @@ public class L0Sampler {
 
     private int size(int index) {
         if (W0[index] == 0) return 0;
-        if (W2[index] % P != (W0[index] * ppow(Z[index], W1[index] / W0[index])) % P) return 2;
+        if (m(W2[index]) != m(W0[index] * ppow(Z[index], W1[index] / W0[index]))) return 2;
         return 1;
     }
 
@@ -72,7 +73,15 @@ public class L0Sampler {
             throw new IllegalArgumentException(String.format((Locale) null, msg, v1, v2));
     }
 
-    public void merge(L0Sampler that) {
+    @Override
+    public void clear() {
+        Arrays.fill(W0, 0);
+        Arrays.fill(W1, 0);
+        Arrays.fill(W2, 0);
+    }
+
+    @Override
+    public void add(L0Sampler that) {
         check(this.d, that.d, "Must have same depth: %d != %d");
         check(this.m, that.m, "Must have same width: %d != %d");
         check(this.seed, that.seed, "Must have same seed: %d != %d");
@@ -80,15 +89,19 @@ public class L0Sampler {
         for (int i = 0; i < this.W0.length; i++) {
             W0[i] += that.W0[i];
             W1[i] += that.W1[i];
-            W2[i] = (W2[i] + that.W2[i]) % P;
+            W2[i] = m((long) W2[i] + that.W2[i]);
         }
+    }
 
+    private int m(long v) {
+        long r = v % P;
+        return (int) (r < 0 ? r + P : r);
     }
 
 
     private void innerUpdate(int index, int i, long delta) {
         W0[index] += delta;
         W1[index] += delta * i;
-        W2[index] += (W2[index] + delta * ppow(Z[index], i)) % P;
+        W2[index] = m(W2[index] + delta * ppow(Z[index], i));
     }
 }
