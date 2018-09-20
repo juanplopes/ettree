@@ -22,6 +22,16 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         this.d = d;
     }
 
+    public L0Sampler(L0Sampler copy) {
+        this.W0 = Arrays.copyOf(copy.W0, copy.W0.length);
+        this.W1 = Arrays.copyOf(copy.W1, copy.W1.length);
+        this.W2 = Arrays.copyOf(copy.W2, copy.W2.length);
+        this.Z = Arrays.copyOf(copy.Z, copy.Z.length);
+        this.seed = copy.seed;
+        this.m = copy.m;
+        this.d = copy.d;
+    }
+
     private void initializeRandomZ(int m, int d, Random random) {
         for (int i = 0; i < m * d; i++)
             Z[i] = random.nextInt();
@@ -51,6 +61,10 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         return -1;
     }
 
+    public int bytes() {
+        return W0.length * 4 * 4 + 12;
+    }
+
     private int size(int index) {
         if (W0[index] == 0) return 0;
         if (m(W2[index]) != m(W0[index] * ppow(Z[index], W1[index] / W0[index]))) return 2;
@@ -60,7 +74,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
     private long ppow(long a, long b) {
         long free = 1;
         while (b > 1) {
-            if ((b & 1) > 0)
+            if ((b & 1) == 1)
                 free = (free * a) % P;
             a = (a * a) % P;
             b >>= 1;

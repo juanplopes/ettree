@@ -12,11 +12,27 @@ public class L0SamplerTest {
     @Test
     public void testSimpleSampling() throws Exception {
         L0Sampler sampler = new L0Sampler(25, 1, 160);
+        assertThat(sampler.bytes()).isEqualTo(40);
 
         for (int i = 0; i < 100; i++)
             sampler.update(i * 2, 100);
 
         assertThat(sampler.recover()).isEqualTo(124);
+    }
+
+    @Test
+    public void testSimpleSamplingOnCopy() throws Exception {
+        L0Sampler sampler = new L0Sampler(25, 1, 160);
+        for (int i = 0; i < 100; i++)
+            sampler.update(i * 2, 100);
+
+        L0Sampler sampler2 = new L0Sampler(sampler);
+
+        for (int i = 100; i < 200; i++)
+            sampler2.update(i * 2, 100);
+
+        assertThat(sampler.recover()).isEqualTo(124);
+        assertThat(sampler2.recover()).isEqualTo(164);
     }
 
     @Test
@@ -40,15 +56,12 @@ public class L0SamplerTest {
     public void testMergeSampling() throws Exception {
         L0Sampler sampler1 = new L0Sampler(25, 2, 400);
         L0Sampler sampler2 = new L0Sampler(25, 2, 400);
-        L0Sampler sampler3 = new L0Sampler(25, 2, 400);
 
         for (int i = 0; i < 50; i++) {
             sampler1.update(i * 2, 100);
-            sampler3.update(i * 2, 100);
         }
         for (int i = 50; i < 100; i++) {
             sampler2.update(i * 2, 100);
-            sampler3.update(i * 2, 100);
         }
 
         assertThat(sampler1.recover()).isEqualTo(6);
