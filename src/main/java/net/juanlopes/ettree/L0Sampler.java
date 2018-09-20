@@ -1,7 +1,7 @@
 package net.juanlopes.ettree;
 
-import java.nio.ByteBuffer;
-import java.security.SecureRandom;
+import java.util.Locale;
+import java.util.Random;
 
 public class L0Sampler {
     private final int P = 2147483647;
@@ -14,14 +14,14 @@ public class L0Sampler {
         this.W1 = new int[m * d];
         this.W2 = new int[m * d];
         this.Z = new int[m * d];
-        SecureRandom random = new SecureRandom(ByteBuffer.allocate(8).putLong(seed).array());
+        Random random = new Random(seed);
         initializeRandomZ(m, d, random);
         this.seed = random.nextInt();
         this.m = m;
         this.d = d;
     }
 
-    private void initializeRandomZ(int m, int d, SecureRandom random) {
+    private void initializeRandomZ(int m, int d, Random random) {
         for (int i = 0; i < m * d; i++)
             Z[i] = random.nextInt();
     }
@@ -31,20 +31,15 @@ public class L0Sampler {
         for (int j = 0; j < d; j++) {
             long hash = MurmurHash.hashLong(i, seed);
             seed = (int) hash;
-            if (hash == 0) continue;
+            long croppedHash = hash & (1 << m) - 1;
+            if (croppedHash == 0) continue;
 
-            int pos = Long.numberOfLeadingZeros(hash & ((1 << m) - 1)) - (64 - m);
+            int pos = Long.numberOfLeadingZeros(croppedHash) - (64 - m);
             innerUpdate(j * m + pos, i, delta);
         }
     }
 
-    private int size(int index) {
-        if (W0[index] == 0) return 0;
-        if (W2[index] != (W0[index] * ppow(Z[index], W1[index] / W0[index])) % P) return 2;
-        return 1;
-    }
-
-    int recover() {
+    public int recover() {
         for (int i = 0; i < d; i++) {
             for (int j = 0; j < m; j++) {
                 int index = i * m + j;
@@ -55,21 +50,45 @@ public class L0Sampler {
         return -1;
     }
 
+    private int size(int index) {
+        if (W0[index] == 0) return 0;
+        if (W2[index] % P != (W0[index] * ppow(Z[index], W1[index] / W0[index])) % P) return 2;
+        return 1;
+    }
+
     private long ppow(long a, long b) {
         long free = 1;
         while (b > 1) {
             if ((b & 1) > 0)
                 free = (free * a) % P;
             a = (a * a) % P;
-            b >>= 1; //integer divison by 2
+            b >>= 1;
         }
         return (a * free) % P;
+    }
+
+    private void check(int v1, int v2, String msg) {
+        if (v1 != v2)
+            throw new IllegalArgumentException(String.format((Locale) null, msg, v1, v2));
+    }
+
+    public void merge(L0Sampler that) {
+        check(this.d, that.d, "Must have same depth: %d != %d");
+        check(this.m, that.m, "Must have same width: %d != %d");
+        check(this.seed, that.seed, "Must have same seed: %d != %d");
+
+        for (int i = 0; i < this.W0.length; i++) {
+            W0[i] += that.W0[i];
+            W1[i] += that.W1[i];
+            W2[i] = (W2[i] + that.W2[i]) % P;
+        }
+
     }
 
 
     private void innerUpdate(int index, int i, long delta) {
         W0[index] += delta;
         W1[index] += delta * i;
-        W2[index] += (W2[index] + delta * ppow(Z[i], i)) % P;
+        W2[index] += (W2[index] + delta * ppow(Z[index], i)) % P;
     }
 }
