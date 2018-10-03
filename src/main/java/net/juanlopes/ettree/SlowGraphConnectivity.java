@@ -1,5 +1,8 @@
 package net.juanlopes.ettree;
 
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
 public class SlowGraphConnectivity {
     private final L0Sampler[] M;
     private final int n;
@@ -28,44 +31,66 @@ public class SlowGraphConnectivity {
     }
 
     public int bytes() {
-        return M[0].bytes() + 8;
+        return M[0].bytes() * n + 8;
     }
 
-    public boolean connected() {
+    public int components() {
         UnionFind uf = new UnionFind();
+        PriorityQueue<Next> pq = new PriorityQueue<>(Comparator.comparing(x -> x.size));
+
+        for (int i = 0; i < n; i++)
+            pq.add(new Next(i, 1));
+
         int components = n;
-        int roundOps;
 
-        do {
-            roundOps = 0;
+        while (!pq.isEmpty()) {
+            Next next = pq.poll();
+            int v = next.set;
 
-            for (int i = 0; i < n; i++) {
-                if (uf.root(i)) {
-                    int recovered = uf.recover(i);
-                    if (recovered >= 0) {
-                        int a = recovered / n, b = recovered % n;
-                        roundOps++;
-                        components--;
-                        uf.union(a, b);
-                    }
+            if (uf.root(v)) {
+                int recovered = uf.recover(v);
+                if (recovered >= 0) {
+                    int a = recovered / n, b = recovered % n;
+
+                    components--;
+                    int newSize = uf.union(a, b);
+                    int newRoot = uf.find(a);
+
+                    //System.out.println(a + " " + b + " " + v + " " + next.size + " " + newSize);
+
+                    pq.add(new Next(newRoot, newSize));
                 }
             }
-        } while (roundOps > 0);
+        }
 
-        return components == 1;
+        assert components >= 1;
+        return components;
+    }
+
+    private static class Next {
+        private final int set;
+        private final int size;
+
+        public Next(int set, int size) {
+            this.set = set;
+            this.size = size;
+        }
     }
 
     private class UnionFind {
         private final int[] P;
         private final L0Sampler[] M;
+        private final int S[];
 
         public UnionFind() {
             this.P = new int[n];
             this.M = new L0Sampler[n];
+            this.S = new int[n];
 
             for (int i = 0; i < n; i++) {
                 P[i] = i;
                 M[i] = new L0Sampler(SlowGraphConnectivity.this.M[i]);
+                S[i] = 1;
             }
         }
 
@@ -77,13 +102,14 @@ public class SlowGraphConnectivity {
             return P[v] == v;
         }
 
+
         public int find(int v) {
             if (!root(v))
                 return P[v] = find(P[v]);
             return v;
         }
 
-        public void union(int x, int y) {
+        public int union(int x, int y) {
             int a = find(x), b = find(y);
             if (a < b) {
                 int c = a;
@@ -91,7 +117,9 @@ public class SlowGraphConnectivity {
                 b = c;
             }
             M[a].add(M[b]);
+            S[a] += S[b];
             P[b] = a;
+            return S[a];
         }
     }
 }

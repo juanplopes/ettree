@@ -12,12 +12,12 @@ public class L0SamplerTest {
     @Test
     public void testSimpleSampling() throws Exception {
         L0Sampler sampler = new L0Sampler(25, 1, 160);
-        assertThat(sampler.bytes()).isEqualTo(40);
+        assertThat(sampler.bytes()).isEqualTo(316);
 
         for (int i = 0; i < 100; i++)
             sampler.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(124);
+        assertThat(sampler.recover()).isEqualTo(22);
     }
 
     @Test
@@ -31,13 +31,13 @@ public class L0SamplerTest {
         for (int i = 100; i < 200; i++)
             sampler2.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(124);
-        assertThat(sampler2.recover()).isEqualTo(164);
+        assertThat(sampler.recover()).isEqualTo(22);
+        assertThat(sampler2.recover()).isEqualTo(296);
     }
 
     @Test
     public void testCantRecover() throws Exception {
-        L0Sampler sampler = new L0Sampler(25, 1, 150);
+        L0Sampler sampler = new L0Sampler(25, 1, 25);
 
         for (int i = 0; i < 100; i++)
             sampler.update(i * 2, 100);
@@ -54,8 +54,8 @@ public class L0SamplerTest {
 
     @Test
     public void testMergeSampling() throws Exception {
-        L0Sampler sampler1 = new L0Sampler(25, 2, 400);
-        L0Sampler sampler2 = new L0Sampler(25, 2, 400);
+        L0Sampler sampler1 = new L0Sampler(25, 2, 7);
+        L0Sampler sampler2 = new L0Sampler(25, 2, 7);
 
         for (int i = 0; i < 50; i++) {
             sampler1.update(i * 2, 100);
@@ -64,16 +64,16 @@ public class L0SamplerTest {
             sampler2.update(i * 2, 100);
         }
 
-        assertThat(sampler1.recover()).isEqualTo(6);
+        assertThat(sampler1.recover()).isEqualTo(28);
 
         sampler1.add(sampler2);
 
-        assertThat(sampler1.recover()).isEqualTo(146);
-        assertThat(sampler2.recover()).isEqualTo(146);
+        assertThat(sampler1.recover()).isEqualTo(152);
+        assertThat(sampler2.recover()).isEqualTo(150);
 
         sampler1.clear();
         assertThat(sampler1.recover()).isEqualTo(-1);
-        assertThat(sampler2.recover()).isEqualTo(146);
+        assertThat(sampler2.recover()).isEqualTo(150);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class L0SamplerTest {
 
         assertThatThrownBy(() -> sampler1.add(sampler2))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Must have same seed: -95752431 != 1896773833");
+                .hasMessage("Must have same seed: 160 != 150");
     }
 
     @Test
@@ -119,7 +119,7 @@ public class L0SamplerTest {
 
             for (int i = 0; i < 1000; i += 2)
                 sampler1.update(i, 1);
-            for (int i = 0; i < 1000; i += 3)
+            for (int i = 0; i < 1000; i -= 3)
                 sampler2.update(i, -1);
 
             sampler1.add(sampler2);
