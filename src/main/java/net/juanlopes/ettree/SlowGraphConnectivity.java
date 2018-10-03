@@ -12,8 +12,9 @@ public class SlowGraphConnectivity {
         this.n = n;
         this.d = d;
         this.M = new L0Sampler[n];
+        int m = (int) Math.ceil(Math.log(2 * n) / Math.log(2)) + 5;
         for (int i = 0; i < n; i++)
-            M[i] = new L0Sampler((int) Math.ceil(Math.log(2 * n) / Math.log(2)) + 5, d, seed);
+            M[i] = new L0Sampler(m, d, seed);
     }
 
     public void addEdge(int a, int b) {
@@ -43,7 +44,7 @@ public class SlowGraphConnectivity {
 
         int components = n;
 
-        while (!pq.isEmpty()) {
+        while (components > 1 && !pq.isEmpty()) {
             Next next = pq.poll();
             int v = next.set;
 
@@ -56,9 +57,9 @@ public class SlowGraphConnectivity {
                     int newSize = uf.union(a, b);
                     int newRoot = uf.find(a);
 
-                    //System.out.println(a + " " + b + " " + v + " " + next.size + " " + newSize);
-
                     pq.add(new Next(newRoot, newSize));
+                } else {
+                    //System.out.println("BLEH");
                 }
             }
         }

@@ -114,15 +114,11 @@ public class L0SamplerTest {
         int fail = 0;
         for (int k = 0; k < 10000; k++) {
             long seed = random.nextLong();
-            L0Sampler sampler1 = new L0Sampler(25, 4, seed);
-            L0Sampler sampler2 = new L0Sampler(25, 4, seed);
+            L0Sampler sampler1 = new L0Sampler(10, 4, seed);
 
-            for (int i = 0; i < 1000; i += 2)
-                sampler1.update(i, 1);
-            for (int i = 0; i < 1000; i -= 3)
-                sampler2.update(i, -1);
+            sampler1.update(1, 1);
+            sampler1.update(2, 1);
 
-            sampler1.add(sampler2);
             int recovered = sampler1.recover();
             if (recovered >= 0)
                 V[recovered % 6]++;

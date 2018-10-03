@@ -33,7 +33,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
             long hash = MurmurHash.hashLong(i, seed);
             seed = (int) hash;
             long croppedHash = hash & (1 << m) - 1;
-            if (croppedHash == 0) continue;
+            if (croppedHash == 0) croppedHash++;
 
             int pos = Long.numberOfLeadingZeros(croppedHash) - (64 - m);
             innerUpdate(j * m + pos, i, delta);
@@ -106,10 +106,10 @@ public class L0Sampler implements Mergeable<L0Sampler> {
     private void innerUpdate(int index, int i, long delta) {
         W0[index] += delta;
         W1[index] += delta * i;
-        W2[index] = m(W2[index] + delta * ppow(z(index), i));
+        W2[index] = m(W2[index] + m(delta * ppow(z(index), i)));
     }
 
     private int z(int index) {
-        return MurmurHash.hashLong(index, (int) (this.seed >>> 32));
+        return m(MurmurHash.hashLong(index, (int) (this.seed >>> 32)));
     }
 }
