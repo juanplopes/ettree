@@ -2,19 +2,16 @@ package net.juanlopes.ettree;
 
 public class SlowGraphConnectivity {
     private final L0Sampler[] M;
-    private final int d;
-    private final int layers;
     private final int n;
+    private final int d;
 
     public SlowGraphConnectivity(int n, int d, long seed) {
         this.n = n;
-
-        this.M = new L0Sampler[n];
         this.d = d;
-        this.layers = (int) Math.ceil(Math.log(n) / Math.log(2));
-        int m = (int) Math.ceil(Math.log(n * n) / Math.log(2)) + 5;
+        this.M = new L0Sampler[n];
+        int m = (int) Math.ceil(Math.log(2 * n) / Math.log(2)) + 5;
         for (int i = 0; i < n; i++)
-            M[i] = new L0Sampler(m, d * layers, seed);
+            M[i] = new L0Sampler(m, d, seed);
     }
 
     public void addEdge(int a, int b) {
@@ -40,10 +37,11 @@ public class SlowGraphConnectivity {
 
         int components = n;
 
+        int layers = (int) Math.ceil(Math.log(n) / Math.log(2));
         for (int i = 0; i < layers; i++) {
             for (int v = 0; v < n; v++) {
                 if (uf.root(v)) {
-                    int recovered = uf.recover(v, i);
+                    int recovered = uf.recover(v);
                     if (recovered >= 0) {
                         int a = recovered / n, b = recovered % n;
 
@@ -57,7 +55,6 @@ public class SlowGraphConnectivity {
         assert components >= 1;
         return components;
     }
-
 
     private class UnionFind {
         private final int[] P;
@@ -76,8 +73,8 @@ public class SlowGraphConnectivity {
             }
         }
 
-        public int recover(int v, int used) {
-            return M[v].recover(used * d, (used + 1) * d);
+        public int recover(int v) {
+            return M[v].recover();
         }
 
         public boolean root(int v) {

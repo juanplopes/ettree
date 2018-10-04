@@ -141,9 +141,9 @@ public class L0SamplerTest {
         int[] V = new int[100];
         for (int k = 0; k < 10000; k++) {
             long seed = random.nextLong();
-            L0Sampler sampler1 = new L0Sampler(20, 10, seed);
+            L0Sampler sampler1 = new L0Sampler(20, 1, seed);
 
-            for (int i = 0; i < 1024; i++)
+            for (int i = 0; i < 2; i++)
                 sampler1.update(i * 123, 1);
 
             int count = 0, recovered;
