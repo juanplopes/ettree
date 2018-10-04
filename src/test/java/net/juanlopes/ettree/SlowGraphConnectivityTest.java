@@ -32,11 +32,10 @@ public class SlowGraphConnectivityTest {
     @Test
     @Ignore
     public void name3() throws Exception {
-        int count = 0;
-        for (int i = 0; i < 10000; i++) {
-            if (test(10, d(10), i * 2) > 1)
-                count++;
-        }
+        long count = IntStream.range(0, 100).parallel().mapToLong(x -> {
+            return test(512, d(512), x * 2);
+        }).filter(x -> x > 1).count();
+
 
         System.out.println(count);
     }
@@ -44,7 +43,7 @@ public class SlowGraphConnectivityTest {
     @Test
     @Ignore
     public void name() throws Exception {
-        for (int i = 32; i <= 10000; i *= 2) {
+        for (int i = 128; i <= 100000; i *= 2) {
             int n = i;
             double x = getErrors(n);
             System.out.println(n + "\t" + x + "\t" + d(n) + "\t" + bytes(n) + "\t" + (n * n / 8));
@@ -54,7 +53,7 @@ public class SlowGraphConnectivityTest {
 
     private double getErrors(int n) {
         Random random = new Random();
-        int tests = 100;
+        int tests = 8;
         int d = d(n);
 
         long errors = IntStream.range(0, tests).parallel().mapToLong(x -> {
@@ -68,7 +67,7 @@ public class SlowGraphConnectivityTest {
     private long test(int n, int d, long v) {
         SlowGraphConnectivity G = new SlowGraphConnectivity(n, d, v);
         for (int i = 0; i < n; i++) {
-            for (int j = i - 1; j >= 0 && j >= 0; j--)
+            for (int j = i - 1; j >= 0 && j >= i - 1; j--)
                 G.addEdge(i, j);
         }
 
@@ -76,14 +75,11 @@ public class SlowGraphConnectivityTest {
     }
 
     private int d(int n) {
-        return (int) Math.ceil(Math.log(n));
+        return (int)Math.ceil(Math.log(n)/Math.log(2))-6;
+        //return 1;
     }
 
     private int bytes(int n) {
         return new SlowGraphConnectivity(n, d(n), 42).bytes();
-    }
-
-    private int log2(int n) {
-        return 31 - Integer.numberOfLeadingZeros(n);
     }
 }

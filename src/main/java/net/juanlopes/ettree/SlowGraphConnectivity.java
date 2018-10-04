@@ -1,8 +1,5 @@
 package net.juanlopes.ettree;
 
-import java.util.Comparator;
-import java.util.PriorityQueue;
-
 public class SlowGraphConnectivity {
     private final L0Sampler[] M;
     private final int d;
@@ -15,7 +12,7 @@ public class SlowGraphConnectivity {
         this.M = new L0Sampler[n];
         this.d = d;
         this.layers = (int) Math.ceil(Math.log(n) / Math.log(2));
-        int m = (int) Math.ceil(Math.log(2 * n) / Math.log(2)) + 5;
+        int m = (int) Math.ceil(Math.log(n * n) / Math.log(2)) + 5;
         for (int i = 0; i < n; i++)
             M[i] = new L0Sampler(m, d * layers, seed);
     }
