@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 public class SlowGraphConnectivityTest {
     @Test
     public void logggg() throws Exception {
-        System.out.println(test(10, 1, 100));
+        System.out.println(test(10, 5, 100));
     }
 
     @Test
@@ -34,7 +34,7 @@ public class SlowGraphConnectivityTest {
     public void name3() throws Exception {
         int count = 0;
         for (int i = 0; i < 10000; i++) {
-            if (test(10, 2, i*2) > 1)
+            if (test(10, d(10), i * 2) > 1)
                 count++;
         }
 
@@ -44,7 +44,7 @@ public class SlowGraphConnectivityTest {
     @Test
     @Ignore
     public void name() throws Exception {
-        for (int i = 1; i <= 1000; i += 10) {
+        for (int i = 32; i <= 10000; i *= 2) {
             int n = i;
             double x = getErrors(n);
             System.out.println(n + "\t" + x + "\t" + d(n) + "\t" + bytes(n) + "\t" + (n * n / 8));
@@ -76,7 +76,7 @@ public class SlowGraphConnectivityTest {
     }
 
     private int d(int n) {
-        return (int) (Math.pow(Math.log(n), 1));
+        return (int) Math.ceil(Math.log(n));
     }
 
     private int bytes(int n) {

@@ -5,16 +5,19 @@ import java.util.PriorityQueue;
 
 public class SlowGraphConnectivity {
     private final L0Sampler[] M;
-    private final int n;
     private final int d;
+    private final int layers;
+    private final int n;
 
     public SlowGraphConnectivity(int n, int d, long seed) {
         this.n = n;
-        this.d = d;
+
         this.M = new L0Sampler[n];
+        this.d = d;
+        this.layers = (int) Math.ceil(Math.log(n) / Math.log(2));
         int m = (int) Math.ceil(Math.log(2 * n) / Math.log(2)) + 5;
         for (int i = 0; i < n; i++)
-            M[i] = new L0Sampler(m, d, seed);
+            M[i] = new L0Sampler(m, d * layers, seed);
     }
 
     public void addEdge(int a, int b) {
@@ -37,29 +40,19 @@ public class SlowGraphConnectivity {
 
     public int components() {
         UnionFind uf = new UnionFind();
-        PriorityQueue<Next> pq = new PriorityQueue<>(Comparator.comparing(x -> x.size));
-
-        for (int i = 0; i < n; i++)
-            pq.add(new Next(i, 1));
 
         int components = n;
 
-        while (components > 1 && !pq.isEmpty()) {
-            Next next = pq.poll();
-            int v = next.set;
+        for (int i = 0; i < layers; i++) {
+            for (int v = 0; v < n; v++) {
+                if (uf.root(v)) {
+                    int recovered = uf.recover(v, i);
+                    if (recovered >= 0) {
+                        int a = recovered / n, b = recovered % n;
 
-            if (uf.root(v)) {
-                int recovered = uf.recover(v);
-                if (recovered >= 0) {
-                    int a = recovered / n, b = recovered % n;
-
-                    components--;
-                    int newSize = uf.union(a, b);
-                    int newRoot = uf.find(a);
-
-                    pq.add(new Next(newRoot, newSize));
-                } else {
-                    //System.out.println("BLEH");
+                        components--;
+                        uf.union(a, b);
+                    }
                 }
             }
         }
@@ -68,15 +61,6 @@ public class SlowGraphConnectivity {
         return components;
     }
 
-    private static class Next {
-        private final int set;
-        private final int size;
-
-        public Next(int set, int size) {
-            this.set = set;
-            this.size = size;
-        }
-    }
 
     private class UnionFind {
         private final int[] P;
@@ -95,8 +79,8 @@ public class SlowGraphConnectivity {
             }
         }
 
-        public int recover(int v) {
-            return M[v].recover();
+        public int recover(int v, int used) {
+            return M[v].recover(used * d, (used + 1) * d);
         }
 
         public boolean root(int v) {
@@ -120,7 +104,7 @@ public class SlowGraphConnectivity {
             M[a].add(M[b]);
             S[a] += S[b];
             P[b] = a;
-            return S[a];
+            return a;
         }
     }
 }

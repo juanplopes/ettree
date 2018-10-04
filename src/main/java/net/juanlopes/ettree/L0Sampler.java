@@ -41,7 +41,11 @@ public class L0Sampler implements Mergeable<L0Sampler> {
     }
 
     public int recover() {
-        for (int i = 0; i < d; i++) {
+        return recover(0, d);
+    }
+
+    public int recover(int start, int end) {
+        for (int i = start; i < end; i++) {
             for (int j = 0; j < m; j++) {
                 int index = i * m + j;
                 if (size(index) == 1)

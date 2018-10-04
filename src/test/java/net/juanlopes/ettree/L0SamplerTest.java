@@ -107,7 +107,7 @@ public class L0SamplerTest {
 
     @Test
     @Ignore
-    public void name2() throws Exception {
+    public void countFailures() throws Exception {
 
         Random random = new Random();
         int[] V = new int[1000];
@@ -131,5 +131,36 @@ public class L0SamplerTest {
         for (int i = 0; i < 6; i++) {
             System.out.println(i + " " + V[i] + " " + (i % 6));
         }
+    }
+
+    @Test
+    @Ignore
+    public void countSuccesses() throws Exception {
+
+        Random random = new Random();
+        int[] V = new int[100];
+        for (int k = 0; k < 10000; k++) {
+            long seed = random.nextLong();
+            L0Sampler sampler1 = new L0Sampler(20, 10, seed);
+
+            for (int i = 0; i < 1024; i++)
+                sampler1.update(i * 123, 1);
+
+            int count = 0, recovered;
+
+            while ((recovered = sampler1.recover()) >= 0) {
+                count++;
+                sampler1.update(recovered, -1);
+            }
+
+            V[count]++;
+        }
+
+        double mean = 0;
+        for (int i = 0; i < 40; i++) {
+            mean += i * V[i];
+            System.out.println(i + " " + V[i]);
+        }
+        System.out.println(mean / 10000);
     }
 }
