@@ -15,7 +15,7 @@ public class SlowGraphConnectivityTest {
     @Test
     @Ignore
     public void name() throws Exception {
-        int nodes = 1000, tests = 2048, d = 12;
+        int nodes = 500, tests = 1024, d = 12;
 
         int step = nodes / 100;
         double R[][] = new double[100][d - 1];
@@ -28,18 +28,20 @@ public class SlowGraphConnectivityTest {
             long seed = random.nextLong();
             executor.submit(() -> {
                 SlowGraphConnectivity G = new SlowGraphConnectivity(nodes, d, seed);
-                for (int k = 0; k < 100; k++) {
-                    int start = k * step;
-                    int end = (k + 1) * step;
+                int T[] = new int[nodes];
+                for (int k = 1; k <= 100; k++) {
+                    int start = (k - 1) * step;
+                    int end = k * step;
 
                     for (int i = start; i < end; i++) {
-                        for (int j = i - 1; j >= 0 && j >= i - 32; j--)
-                            G.addEdge(i, j);
+                        for (int j = 0; j < Math.min(32, i); j++)
+                            G.addEdge(i, i - j - 1);
+
                     }
                     for (int i = 1; i < d; i++) {
                         if (G.components(end, i) == 1) {
                             synchronized (R) {
-                                R[k][i - 1]++;
+                                R[k - 1][i - 1]++;
                             }
                         }
                     }
@@ -54,7 +56,7 @@ public class SlowGraphConnectivityTest {
             long count = finished.getCount();
             double rate = (System.nanoTime() - start) / (double) (tests - count) / 1e9;
             if (lastCount != count)
-                System.out.println(finished.getCount() + "/" + tests + " (" + Math.round(count * rate) + ")");
+                System.out.println((tests - finished.getCount()) + "/" + tests + " (" + Math.round(count * rate) + ")");
             lastCount = count;
         }
 
