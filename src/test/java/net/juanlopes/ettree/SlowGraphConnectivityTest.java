@@ -10,74 +10,43 @@ import java.util.stream.IntStream;
 
 public class SlowGraphConnectivityTest {
     @Test
-    public void logggg() throws Exception {
-        for (int i = 128; i * i > 0; i *= 1.1) {
-            System.out.println(i + "\t" + bytes(i) + "\t" + Math.ceil(i / 8.0 * i));
-        }
-    }
-
-    @Test
-    @Ignore
-    public void name2() throws Exception {
-        long start = System.currentTimeMillis();
-        int n = 10;
-        SlowGraphConnectivity G = new SlowGraphConnectivity(n, 1, 100);
-        for (int i = 1; i < n; i++) {
-            for (int j = i - 1; j >= 0 && j >= i - i; j--)
-                G.addEdge(i, j);
-            //G.addEdge(i, i - 2);
-        }
-        System.out.println(System.currentTimeMillis() - start);
-        System.out.println(G.components(0));
-        System.out.println(System.currentTimeMillis() - start);
-
-    }
-
-    @Test
     @Ignore
     public void name() throws Exception {
-        for (int i = 128; i * i > 0; i *= 1.1) {
-            int n = i;
-            double[] errors = getErrors(n);
-            String line = Arrays.stream(errors).mapToObj(x -> "\t" + x).collect(Collectors.joining());
-            System.out.println(n + line);
-        }
+        int nodes = 1000, tests = 128, d = 12;
 
-    }
+        SlowGraphConnectivity[] G = IntStream.range(0, tests)
+                .mapToObj(x -> new SlowGraphConnectivity(nodes, d, x))
+                .toArray(SlowGraphConnectivity[]::new);
 
-    private double[] getErrors(int n) {
-        Random random = new Random();
-        int tests = 256;
+        int step = nodes / 100;
 
-        double[] V = new double[10];
-        IntStream.range(0, tests).parallel().mapToObj(x -> test(n, random.nextLong())).forEach(x -> {
-            synchronized (V) {
-                for (int i = 0; i < V.length; i++)
-                    V[i] += x[i];
+        for (int k = 0; k < 100; k++) {
+            double R[] = new double[d - 1];
+
+            int start = k * step;
+            int end = (k + 1) * step;
+
+            IntStream.range(0, tests).parallel().forEach(x -> {
+                for (int i = start; i < end; i++) {
+                    for (int j = i - 1; j >= 0 && j >= i - 32; j--)
+                        G[x].addEdge(i, j);
+                }
+                for (int i = 1; i < d; i++) {
+                    if (G[x].components(end, i) == 1) {
+                        synchronized (R) {
+                            R[i - 1]++;
+                        }
+                    }
+                }
+            });
+            for (int i = 0; i < R.length; i++) {
+                R[i] /= tests;
             }
-        });
-        for (int i = 0; i < V.length; i++)
-            V[i] /= tests;
 
-        return V;
-    }
-
-    private int[] test(int n, long v) {
-        SlowGraphConnectivity G = new SlowGraphConnectivity(n, 10, v);
-        for (int i = 0; i < n; i++) {
-            for (int j = i - 1; j >= 0 && j >= i - 8; j--)
-                G.addEdge(i, j);
+            String line = Arrays.stream(R).mapToObj(x -> "\t" + x).collect(Collectors.joining());
+            System.out.println(end + line);
         }
 
-        return IntStream.range(0, 10).map(x -> G.components(x) > 1 ? 1 : 0).toArray();
     }
 
-    private int d(int n) {
-        return Math.max(1, (int) Math.ceil(Math.pow(Math.log(n) / Math.log(2), 1)) - 8);
-        // return 20;
-    }
-
-    private int bytes(int n) {
-        return new SlowGraphConnectivity(n, 10, 42).bytes();
-    }
 }

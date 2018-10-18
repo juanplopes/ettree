@@ -33,17 +33,17 @@ public class SlowGraphConnectivity {
     }
 
     public int components() {
-        return components(d);
+        return components(n, d);
     }
 
-    public int components(int limit) {
+    public int components(int nodes, int limit) {
         UnionFind uf = new UnionFind();
 
-        int components = n;
+        int components = nodes;
 
         int layers = (int) Math.ceil(Math.log(n) / Math.log(2));
         for (int i = 0; i < layers; i++) {
-            for (int v = 0; v < n; v++) {
+            for (int v = 0; v < nodes; v++) {
                 if (uf.root(v)) {
                     int recovered = uf.recover(v, limit);
                     if (recovered >= 0) {
