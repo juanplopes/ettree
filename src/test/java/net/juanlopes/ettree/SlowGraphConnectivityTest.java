@@ -3,13 +3,17 @@ package net.juanlopes.ettree;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class SlowGraphConnectivityTest {
     @Test
     public void logggg() throws Exception {
-        System.out.println(test(10, 5, 100));
+        for (int i = 128; i * i > 0; i *= 1.1) {
+            System.out.println(i + "\t" + bytes(i) + "\t" + Math.ceil(i / 8.0 * i));
+        }
     }
 
     @Test
@@ -17,61 +21,55 @@ public class SlowGraphConnectivityTest {
     public void name2() throws Exception {
         long start = System.currentTimeMillis();
         int n = 10;
-        SlowGraphConnectivity G = new SlowGraphConnectivity(n, 1, 51);
+        SlowGraphConnectivity G = new SlowGraphConnectivity(n, 1, 100);
         for (int i = 1; i < n; i++) {
             for (int j = i - 1; j >= 0 && j >= i - i; j--)
                 G.addEdge(i, j);
             //G.addEdge(i, i - 2);
         }
         System.out.println(System.currentTimeMillis() - start);
-        System.out.println(G.components());
+        System.out.println(G.components(0));
         System.out.println(System.currentTimeMillis() - start);
 
     }
 
     @Test
     @Ignore
-    public void name3() throws Exception {
-        long count = IntStream.range(0, 100).parallel().mapToLong(x -> {
-            return test(512, d(512), x * 2);
-        }).filter(x -> x > 1).count();
-
-
-        System.out.println(count);
-    }
-
-    @Test
-    @Ignore
     public void name() throws Exception {
-        for (int i = 128; i <= 100000; i *= 1.1) {
+        for (int i = 128; i * i > 0; i *= 1.1) {
             int n = i;
-            double x = getErrors(n);
-            System.out.println(n + "\t" + x + "\t" + d(n) + "\t" + bytes(n) + "\t" + (n / 8.0 * n));
+            double[] errors = getErrors(n);
+            String line = Arrays.stream(errors).mapToObj(x -> "\t" + x).collect(Collectors.joining());
+            System.out.println(n + line);
         }
 
     }
 
-    private double getErrors(int n) {
+    private double[] getErrors(int n) {
         Random random = new Random();
-        int tests = 16;
-        int d = d(n);
+        int tests = 256;
 
-        long errors = IntStream.range(0, tests).parallel().mapToLong(x -> {
-            long v = random.nextLong();
-            return test(n, d, v);
-        }).filter(x -> x > 1).count();
+        double[] V = new double[10];
+        IntStream.range(0, tests).parallel().mapToObj(x -> test(n, random.nextLong())).forEach(x -> {
+            synchronized (V) {
+                for (int i = 0; i < V.length; i++)
+                    V[i] += x[i];
+            }
+        });
+        for (int i = 0; i < V.length; i++)
+            V[i] /= tests;
 
-        return errors / (double) tests;
+        return V;
     }
 
-    private long test(int n, int d, long v) {
-        SlowGraphConnectivity G = new SlowGraphConnectivity(n, d, v);
+    private int[] test(int n, long v) {
+        SlowGraphConnectivity G = new SlowGraphConnectivity(n, 10, v);
         for (int i = 0; i < n; i++) {
-            for (int j = i - 1; j >= 0 && j >= i - 32; j--)
+            for (int j = i - 1; j >= 0 && j >= i - 8; j--)
                 G.addEdge(i, j);
         }
 
-        return G.components();
+        return IntStream.range(0, 10).map(x -> G.components(x) > 1 ? 1 : 0).toArray();
     }
 
     private int d(int n) {
@@ -80,6 +78,6 @@ public class SlowGraphConnectivityTest {
     }
 
     private int bytes(int n) {
-        return new SlowGraphConnectivity(n, d(n), 42).bytes();
+        return new SlowGraphConnectivity(n, 10, 42).bytes();
     }
 }

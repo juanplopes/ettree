@@ -33,6 +33,10 @@ public class SlowGraphConnectivity {
     }
 
     public int components() {
+        return components(d);
+    }
+
+    public int components(int limit) {
         UnionFind uf = new UnionFind();
 
         int components = n;
@@ -41,9 +45,10 @@ public class SlowGraphConnectivity {
         for (int i = 0; i < layers; i++) {
             for (int v = 0; v < n; v++) {
                 if (uf.root(v)) {
-                    int recovered = uf.recover(v);
+                    int recovered = uf.recover(v, limit);
                     if (recovered >= 0) {
                         int a = recovered / n, b = recovered % n;
+                        assert uf.find(a) != uf.find(b);
 
                         components--;
                         uf.union(a, b);
@@ -73,8 +78,8 @@ public class SlowGraphConnectivity {
             }
         }
 
-        public int recover(int v) {
-            return M[v].recover();
+        public int recover(int v, int limit) {
+            return M[v].recover(0, limit);
         }
 
         public boolean root(int v) {
