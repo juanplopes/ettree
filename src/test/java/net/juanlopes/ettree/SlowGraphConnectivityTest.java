@@ -4,66 +4,85 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class SlowGraphConnectivityTest {
     @Test
     @Ignore
     public void name() throws Exception {
-        int nodes = 500, tests = 1024, d = 12;
+        int nodes = 20000, tests = 128, d = 10, steps = 1;
 
-        int step = nodes / 100;
-        double R[][] = new double[100][d - 1];
+        int step = nodes / steps;
+        double R[][] = new double[steps][d - 1];
+        int C[][] = new int[steps][d - 1];
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
         CountDownLatch finished = new CountDownLatch(tests);
+        AtomicLong progress = new AtomicLong(0);
         Random random = new Random();
 
         for (int test = 0; test < tests; test++) {
             long seed = random.nextLong();
             executor.submit(() -> {
-                SlowGraphConnectivity G = new SlowGraphConnectivity(nodes, d, seed);
-                int T[] = new int[nodes];
-                for (int k = 1; k <= 100; k++) {
-                    int start = (k - 1) * step;
-                    int end = k * step;
+                try {
+                    SlowGraphConnectivity G = new SlowGraphConnectivity(nodes, d, seed);
+                    for (int k = 0; k < steps; k++) {
+                        int start = k * step;
+                        int end = (k + 1) * step;
 
-                    for (int i = start; i < end; i++) {
-                        for (int j = 0; j < Math.min(32, i); j++)
-                            G.addEdge(i, i - j - 1);
+                        for (int i = start; i < end; i++) {
+                            for (int j = 0; j < Math.min(32, i); j++)
+                                G.addEdge(i, i - j - 1);
 
-                    }
-                    for (int i = 1; i < d; i++) {
-                        if (G.components(end, i) == 1) {
-                            synchronized (R) {
-                                R[k - 1][i - 1]++;
+                            progress.incrementAndGet();
+                        }
+                        for (int i = 1; i < d; i++) {
+                            C[k][i - 1]++;
+                            if (G.components(end, i) == 1) {
+                                synchronized (R) {
+                                    R[k][i - 1]++;
+                                }
                             }
                         }
                     }
+                    finished.countDown();
+                } catch (Throwable e) {
+                    e.printStackTrace();
                 }
-                finished.countDown();
             });
         }
 
         long start = System.nanoTime();
-        long lastCount = tests;
+        long total = nodes * tests;
+        long lastCount = 0;
         while (!finished.await(1, TimeUnit.SECONDS)) {
-            long count = finished.getCount();
-            double rate = (System.nanoTime() - start) / (double) (tests - count) / 1e9;
-            if (lastCount != count)
-                System.out.println((tests - finished.getCount()) + "/" + tests + " (" + Math.round(count * rate) + ")");
+            long count = progress.get();
+            long now = System.nanoTime();
+            double rate = (double) count / (now - start) * 1e9;
+            if (lastCount != count) {
+                System.out.println(String.format((Locale) null,
+                        "%d/%d (%d) rate: %.0f time: %d",
+                        count,
+                        total,
+                        Math.round((total - count) / rate),
+                        rate,
+                        Math.round((now - start) / 1e9)));
+            }
             lastCount = count;
         }
 
 
-        for (int k = 0; k < 100; k++) {
+        for (int k = 0; k < steps; k++) {
             for (int i = 0; i < R[k].length; i++) {
-                R[k][i] /= tests;
+                assert C[k][i] == tests;
+                R[k][i] /= C[k][i];
             }
 
             String line = Arrays.stream(R[k]).mapToObj(x -> "\t" + x).collect(Collectors.joining());

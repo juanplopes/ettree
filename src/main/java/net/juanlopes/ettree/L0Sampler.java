@@ -27,6 +27,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         this.d = copy.d;
     }
 
+
     public void update(int i, long delta) {
         int seed = (int) this.seed;
         for (int j = 0; j < d; j++) {
@@ -88,6 +89,12 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         Arrays.fill(W2, 0);
     }
 
+    public void clearTo(L0Sampler sampler) {
+        System.arraycopy(sampler.W0, 0, W0, 0, W0.length);
+        System.arraycopy(sampler.W1, 0, W1, 0, W1.length);
+        System.arraycopy(sampler.W2, 0, W2, 0, W2.length);
+    }
+
     @Override
     public void add(L0Sampler that) {
         check(this.d, that.d, "Must have same depth: %d != %d");
@@ -101,11 +108,11 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         }
     }
 
+
     private int m(long v) {
         long r = v % P;
         return (int) (r < 0 ? r + P : r);
     }
-
 
     private void innerUpdate(int index, int i, long delta) {
         W0[index] += delta;
