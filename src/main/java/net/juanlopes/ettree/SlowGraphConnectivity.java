@@ -15,7 +15,7 @@ public class SlowGraphConnectivity {
     public SlowGraphConnectivity(int n, int d, long seed) {
         this.n = n;
         this.d = d;
-        this.m = (int) Math.ceil(Math.log(2 * n) / Math.log(2)) + 5;
+        this.m = (int) Math.ceil(2 * Math.log(n) / Math.log(2)) + 5;
         this.seed = seed;
         this.M = new L0Sampler[n];
         for (int i = 0; i < n; i++)
