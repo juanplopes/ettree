@@ -5,7 +5,6 @@ public class SlowGraphConnectivity {
     private long seed;
     private final UnionFind uf;
 
-
     private final int n;
     private final int d;
     private final int m;
@@ -49,16 +48,13 @@ public class SlowGraphConnectivity {
 
         int layers = (int) Math.ceil(Math.log(nodes) / Math.log(2));
         for (int i = 0; i < layers; i++) {
+            uf.recover(nodes, limit);
             for (int v = 0; v < nodes; v++) {
-                if (uf.root(v)) {
-                    int recovered = uf.recover(v, limit);
-                    if (recovered >= 0) {
-                        int a = recovered / n, b = recovered % n;
-                        assert uf.find(a) != uf.find(b);
-
+                int recovered = uf.E[v];
+                if (recovered >= 0) {
+                    int a = recovered / n, b = recovered % n;
+                    if (uf.union(a, b))
                         components--;
-                        uf.union(a, b);
-                    }
                 }
             }
         }
@@ -71,11 +67,13 @@ public class SlowGraphConnectivity {
         private final int[] P;
         private final L0Sampler[] M;
         private final int S[];
+        private final int E[];
 
         public UnionFind() {
             this.P = new int[n];
             this.M = new L0Sampler[n];
             this.S = new int[n];
+            this.E = new int[n];
 
             for (int i = 0; i < n; i++) {
                 P[i] = i;
@@ -92,8 +90,11 @@ public class SlowGraphConnectivity {
             }
         }
 
-        public int recover(int v, int limit) {
-            return M[v].recover(0, limit);
+        public void recover(int n, int limit) {
+            for (int i = 0; i < n; i++)
+                E[i] = P[i] == i ?
+                        M[i].recover(0, limit) :
+                        -1;
         }
 
 
@@ -107,9 +108,10 @@ public class SlowGraphConnectivity {
             return v;
         }
 
-        public int union(int x, int y) {
+        public boolean union(int x, int y) {
             int a = find(x), b = find(y);
-            if (a < b) {
+            if (a == b) return false;
+            if (a > b) {
                 int c = a;
                 a = b;
                 b = c;
@@ -117,7 +119,7 @@ public class SlowGraphConnectivity {
             M[a].add(M[b]);
             S[a] += S[b];
             P[b] = a;
-            return a;
+            return true;
         }
     }
 }
