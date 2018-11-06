@@ -17,7 +17,7 @@ public class SlowGraphConnectivityTest {
     @Test
     @Ignore
     public void name() throws Exception {
-        int nodes = 10000, tests = 128, d = 10, steps = 1;
+        int nodes = 10000, tests = 512, d = 10, steps = 1;
 
         int step = nodes / steps;
         double R[][] = new double[steps][d];
@@ -38,12 +38,12 @@ public class SlowGraphConnectivityTest {
                         int end = (k + 1) * step;
 
                         for (int i = start; i < end; i++) {
-                            for (int j = 0; j < Math.min(32, i); j++)
-                                G.addEdge(i, i - j - 1);
+                            for (int j = i - 1; j >= 0 && j >= i - 32; j--)
+                                G.addEdge(i, j);
 
                             progress.incrementAndGet();
                         }
-                        for (int i = d - 1; i < d; i++) {
+                        for (int i = 1; i < d; i++) {
                             try {
                                 //System.out.println(G.components(end, i));
 

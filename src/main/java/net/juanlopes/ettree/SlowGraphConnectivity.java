@@ -1,7 +1,5 @@
 package net.juanlopes.ettree;
 
-import java.util.Arrays;
-
 public class SlowGraphConnectivity {
     private final L0Sampler[] M;
     private long seed;
@@ -111,7 +109,7 @@ public class SlowGraphConnectivity {
 
         public int union(int x, int y) {
             int a = find(x), b = find(y);
-            if (S[a] < S[b]) {
+            if (a < b) {
                 int c = a;
                 a = b;
                 b = c;
