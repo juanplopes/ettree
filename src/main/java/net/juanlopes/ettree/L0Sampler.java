@@ -33,7 +33,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         for (int j = 0; j < d; j++) {
             long hash = MurmurHash.hashLong(i, seed);
             seed = (int) hash;
-            long croppedHash = hash & (1 << m) - 1;
+            long croppedHash = hash & (1L << m) - 1;
             if (croppedHash == 0) croppedHash++;
 
             int pos = Long.numberOfLeadingZeros(croppedHash) - (64 - m);
@@ -90,6 +90,8 @@ public class L0Sampler implements Mergeable<L0Sampler> {
     }
 
     public void clearTo(L0Sampler sampler) {
+        checkSameArgs(sampler);
+
         System.arraycopy(sampler.W0, 0, W0, 0, W0.length);
         System.arraycopy(sampler.W1, 0, W1, 0, W1.length);
         System.arraycopy(sampler.W2, 0, W2, 0, W2.length);
@@ -97,15 +99,19 @@ public class L0Sampler implements Mergeable<L0Sampler> {
 
     @Override
     public void add(L0Sampler that) {
-        check(this.d, that.d, "Must have same depth: %d != %d");
-        check(this.m, that.m, "Must have same width: %d != %d");
-        check(this.seed, that.seed, "Must have same seed: %d != %d");
+        checkSameArgs(that);
 
         for (int i = 0; i < this.W0.length; i++) {
             W0[i] += that.W0[i];
             W1[i] += that.W1[i];
             W2[i] = m((long) W2[i] + that.W2[i]);
         }
+    }
+
+    private void checkSameArgs(L0Sampler that) {
+        check(this.d, that.d, "Must have same depth: %d != %d");
+        check(this.m, that.m, "Must have same width: %d != %d");
+        check(this.seed, that.seed, "Must have same seed: %d != %d");
     }
 
 

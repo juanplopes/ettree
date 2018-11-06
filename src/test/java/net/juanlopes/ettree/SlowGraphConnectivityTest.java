@@ -17,11 +17,11 @@ public class SlowGraphConnectivityTest {
     @Test
     @Ignore
     public void name() throws Exception {
-        int nodes = 20000, tests = 128, d = 10, steps = 1;
+        int nodes = 10000, tests = 128, d = 10, steps = 1;
 
         int step = nodes / steps;
-        double R[][] = new double[steps][d - 1];
-        int C[][] = new int[steps][d - 1];
+        double R[][] = new double[steps][d];
+        int C[][] = new int[steps][d];
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
         CountDownLatch finished = new CountDownLatch(tests);
@@ -43,18 +43,27 @@ public class SlowGraphConnectivityTest {
 
                             progress.incrementAndGet();
                         }
-                        for (int i = 1; i < d; i++) {
-                            C[k][i - 1]++;
-                            if (G.components(end, i) == 1) {
-                                synchronized (R) {
-                                    R[k][i - 1]++;
+                        for (int i = d - 1; i < d; i++) {
+                            try {
+                                //System.out.println(G.components(end, i));
+
+                                if (G.components(end, i) == 1) {
+                                    synchronized (R) {
+                                        R[k][i]++;
+                                    }
                                 }
+                                synchronized (C) {
+                                    C[k][i]++;
+                                }
+                            } catch (Throwable e) {
+                                e.printStackTrace();
                             }
                         }
                     }
-                    finished.countDown();
                 } catch (Throwable e) {
                     e.printStackTrace();
+                } finally {
+                    finished.countDown();
                 }
             });
         }
@@ -80,12 +89,13 @@ public class SlowGraphConnectivityTest {
 
 
         for (int k = 0; k < steps; k++) {
-            for (int i = 0; i < R[k].length; i++) {
-                assert C[k][i] == tests;
-                R[k][i] /= C[k][i];
+            for (int i = 1; i < R[k].length; i++) {
+                /*if (C[k][i] != tests)
+                    System.out.println(String.format("meh %d %d %d %d", k, i, C[k][i], tests));*/
+                R[k][i] /= Math.max(C[k][i], 1);
             }
 
-            String line = Arrays.stream(R[k]).mapToObj(x -> "\t" + x).collect(Collectors.joining());
+            String line = Arrays.stream(R[k]).skip(1).mapToObj(x -> "\t" + x).collect(Collectors.joining());
             System.out.println((k + 1) * step + line);
         }
 

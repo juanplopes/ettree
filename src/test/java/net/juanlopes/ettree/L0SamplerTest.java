@@ -36,6 +36,22 @@ public class L0SamplerTest {
     }
 
     @Test
+    public void testSimpleSamplingOnClearTo() throws Exception {
+        L0Sampler sampler = new L0Sampler(25, 1, 160);
+        for (int i = 0; i < 100; i++)
+            sampler.update(i * 2, 100);
+
+        L0Sampler sampler2 = new L0Sampler(25, 1, 160);
+        sampler2.clearTo(sampler);
+
+        for (int i = 100; i < 200; i++)
+            sampler2.update(i * 2, 100);
+
+        assertThat(sampler.recover()).isEqualTo(22);
+        assertThat(sampler2.recover()).isEqualTo(296);
+    }
+
+    @Test
     public void testCantRecover() throws Exception {
         L0Sampler sampler = new L0Sampler(25, 1, 25);
 
@@ -87,15 +103,23 @@ public class L0SamplerTest {
     }
 
     @Test
+    public void name2() throws Exception {
+        L0Sampler sampler = new L0Sampler(32, 11, -3387403153808684640L);
+        sampler.update(10000, 1);
+        sampler.update(1, -1);
+        System.out.println(sampler.recover());
+    }
+
+    @Test
     @Ignore
     public void name() throws Exception {
         Random random = new Random();
         int count = 0;
         for (int k = 0; k < 10000; k++) {
-            L0Sampler sampler = new L0Sampler(25, 1, random.nextLong());
+            L0Sampler sampler = new L0Sampler(32, 1, random.nextLong());
 
-            for (int i = 0; i < 100; i++)
-                sampler.update(i * 2, 1);
+            sampler.update(10000, 1);
+            sampler.update(1, -1);
 
             int recovered = sampler.recover();
             if (recovered < 0)
@@ -141,16 +165,16 @@ public class L0SamplerTest {
         int[] V = new int[100];
         for (int k = 0; k < 10000; k++) {
             long seed = random.nextLong();
-            L0Sampler sampler1 = new L0Sampler(20, 1, seed);
+            L0Sampler sampler1 = new L0Sampler(32, 1, seed);
 
-            for (int i = 0; i < 2; i++)
-                sampler1.update(i * 123, 1);
+            sampler1.update(0, 1);
+            sampler1.update(1, -1);
 
             int count = 0, recovered;
 
             while ((recovered = sampler1.recover()) >= 0) {
                 count++;
-                sampler1.update(recovered, -1);
+                sampler1.update(recovered, recovered == 0 ? -1 : 1);
             }
 
             V[count]++;

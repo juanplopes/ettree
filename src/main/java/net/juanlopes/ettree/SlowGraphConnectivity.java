@@ -49,9 +49,9 @@ public class SlowGraphConnectivity {
         uf.init(nodes);
         int components = nodes;
 
-        int layers = (int) Math.ceil(Math.log(n) / Math.log(2));
-        for (int i = 0; i < layers && components > 1; i++) {
-            for (int v = 0; v < nodes && components > 1; v++) {
+        int layers = (int) Math.ceil(Math.log(nodes) / Math.log(2));
+        for (int i = 0; i < layers; i++) {
+            for (int v = 0; v < nodes; v++) {
                 if (uf.root(v)) {
                     int recovered = uf.recover(v, limit);
                     if (recovered >= 0) {
