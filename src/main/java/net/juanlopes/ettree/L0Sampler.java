@@ -5,7 +5,7 @@ import java.util.Locale;
 
 public class L0Sampler implements Mergeable<L0Sampler> {
     private static final int P = 2147483647;
-    private final int[] W0, W1, W2;
+    public final int[] W0, W1, W2;
     private final long seed;
     private final int m, d;
 

@@ -1,5 +1,7 @@
 package net.juanlopes.ettree;
 
+import java.util.Arrays;
+
 public class SlowGraphConnectivity {
     private final L0Sampler[] M;
     private long seed;
@@ -21,17 +23,19 @@ public class SlowGraphConnectivity {
     }
 
     public void addEdge(int a, int b) {
-        M[a].update(a * n + b, 1);
-        M[a].update(b * n + a, -1);
-        M[b].update(a * n + b, -1);
-        M[b].update(b * n + a, 1);
+        int aa = Math.min(a, b);
+        int bb = Math.max(a, b);
+
+        M[a].update(aa * n + bb, 1);
+        M[b].update(aa * n + bb, -1);
     }
 
     public void removeEdge(int a, int b) {
-        M[a].update(a * n + b, -1);
-        M[a].update(b * n + a, 1);
-        M[b].update(a * n + b, 1);
-        M[b].update(b * n + a, -1);
+        int aa = Math.min(a, b);
+        int bb = Math.max(a, b);
+
+        M[a].update(aa * n + bb, -1);
+        M[b].update(aa * n + bb, 1);
     }
 
     public int bytes() {
@@ -46,9 +50,7 @@ public class SlowGraphConnectivity {
         uf.init(nodes);
         int components = nodes;
 
-        int layers = (int) Math.ceil(Math.log(nodes) / Math.log(2));
-        for (int i = 0; i < layers; i++) {
-            uf.recover(nodes, limit);
+        while(uf.recover(nodes, limit)) {
             for (int v = 0; v < nodes; v++) {
                 int recovered = uf.E[v];
                 if (recovered >= 0) {
@@ -90,11 +92,16 @@ public class SlowGraphConnectivity {
             }
         }
 
-        public void recover(int n, int limit) {
-            for (int i = 0; i < n; i++)
+        public boolean recover(int n, int limit) {
+            boolean answer = false;
+            for (int i = 0; i < n; i++) {
                 E[i] = P[i] == i ?
                         M[i].recover(0, limit) :
                         -1;
+                if (E[i] >= 0)
+                    answer = true;
+            }
+            return answer;
         }
 
 
@@ -111,7 +118,7 @@ public class SlowGraphConnectivity {
         public boolean union(int x, int y) {
             int a = find(x), b = find(y);
             if (a == b) return false;
-            if (a > b) {
+            if (S[a] < S[b]) {
                 int c = a;
                 a = b;
                 b = c;

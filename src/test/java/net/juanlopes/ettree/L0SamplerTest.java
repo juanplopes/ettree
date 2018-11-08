@@ -162,19 +162,19 @@ public class L0SamplerTest {
     public void countSuccesses() throws Exception {
 
         Random random = new Random();
-        int[] V = new int[100];
+        int[] V = new int[100000];
         for (int k = 0; k < 10000; k++) {
             long seed = random.nextLong();
             L0Sampler sampler1 = new L0Sampler(32, 1, seed);
 
-            sampler1.update(0, 1);
-            sampler1.update(1, -1);
+            for (int i = 0; i < 4; i++)
+                sampler1.update(i, 1);
 
             int count = 0, recovered;
 
             while ((recovered = sampler1.recover()) >= 0) {
                 count++;
-                sampler1.update(recovered, recovered == 0 ? -1 : 1);
+                sampler1.update(recovered, -1);
             }
 
             V[count]++;
