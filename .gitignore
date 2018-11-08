@@ -11,3 +11,5 @@
 /*/target
 .jhw-cache
 ldapdata
+*.o
+*.so

@@ -65,19 +65,12 @@ public class L0Sampler implements Mergeable<L0Sampler> {
 
     private int size(int index) {
         if (W0[index] == 0) return 0;
-        if (m(W2[index]) != m(W0[index] * ppow(z(index), W1[index] / W0[index]))) return 2;
+        if (m(W2[index]) != m(W0[index] * ppow(z(index), m(W1[index] / W0[index])))) return 2;
         return 1;
     }
 
     private long ppow(long a, long b) {
-        long free = 1;
-        while (b > 1) {
-            if ((b & 1) == 1)
-                free = free * a % P;
-            a = a * a % P;
-            b >>= 1;
-        }
-        return a * free % P;
+        return PowMod.slow(a, b, P);
     }
 
     private void check(long v1, long v2, String msg) {
