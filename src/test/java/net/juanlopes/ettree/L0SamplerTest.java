@@ -11,18 +11,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class L0SamplerTest {
     @Test
     public void testSimpleSampling() throws Exception {
-        L0Sampler sampler = new L0Sampler(25, 1, 160);
-        assertThat(sampler.bytes()).isEqualTo(316);
+        L0Sampler sampler = new L0Sampler(24, 1, 160);
+        assertThat(sampler.bytes()).isEqualTo(304);
 
         for (int i = 0; i < 100; i++)
             sampler.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(22);
+        assertThat(sampler.recover()).isEqualTo(54);
     }
 
     @Test
     public void testSimpleSamplingOnCopy() throws Exception {
-        L0Sampler sampler = new L0Sampler(25, 1, 160);
+        L0Sampler sampler = new L0Sampler(24, 1, 160);
         for (int i = 0; i < 100; i++)
             sampler.update(i * 2, 100);
 
@@ -31,24 +31,24 @@ public class L0SamplerTest {
         for (int i = 100; i < 200; i++)
             sampler2.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(22);
-        assertThat(sampler2.recover()).isEqualTo(296);
+        assertThat(sampler.recover()).isEqualTo(54);
+        assertThat(sampler2.recover()).isEqualTo(298);
     }
 
     @Test
     public void testSimpleSamplingOnClearTo() throws Exception {
-        L0Sampler sampler = new L0Sampler(25, 1, 160);
+        L0Sampler sampler = new L0Sampler(24, 1, 160);
         for (int i = 0; i < 100; i++)
             sampler.update(i * 2, 100);
 
-        L0Sampler sampler2 = new L0Sampler(25, 1, 160);
+        L0Sampler sampler2 = new L0Sampler(24, 1, 160);
         sampler2.clearTo(sampler);
 
         for (int i = 100; i < 200; i++)
             sampler2.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(22);
-        assertThat(sampler2.recover()).isEqualTo(296);
+        assertThat(sampler.recover()).isEqualTo(54);
+        assertThat(sampler2.recover()).isEqualTo(298);
     }
 
     @Test
@@ -80,16 +80,16 @@ public class L0SamplerTest {
             sampler2.update(i * 2, 100);
         }
 
-        assertThat(sampler1.recover()).isEqualTo(28);
+        assertThat(sampler1.recover()).isEqualTo(68);
 
         sampler1.add(sampler2);
 
-        assertThat(sampler1.recover()).isEqualTo(152);
-        assertThat(sampler2.recover()).isEqualTo(150);
+        assertThat(sampler1.recover()).isEqualTo(114);
+        assertThat(sampler2.recover()).isEqualTo(114);
 
         sampler1.clear();
         assertThat(sampler1.recover()).isEqualTo(-1);
-        assertThat(sampler2.recover()).isEqualTo(150);
+        assertThat(sampler2.recover()).isEqualTo(114);
     }
 
     @Test

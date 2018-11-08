@@ -8,11 +8,13 @@ public class L0Sampler implements Mergeable<L0Sampler> {
     public final int[] W0, W1, W2;
     private final long seed;
     private final int m, d;
+    private final long originalSeed;
 
     public L0Sampler(int m, int d, long seed) {
         this.W0 = new int[m * d];
         this.W1 = new int[m * d];
         this.W2 = new int[m * d];
+        this.originalSeed = seed;
         this.seed = ((long) MurmurHash.hashLong(seed, 42) << 32 | MurmurHash.hashLong(seed, P));
         this.m = m;
         this.d = d;
@@ -23,6 +25,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         this.W1 = Arrays.copyOf(copy.W1, copy.W1.length);
         this.W2 = Arrays.copyOf(copy.W2, copy.W2.length);
         this.seed = copy.seed;
+        this.originalSeed = copy.originalSeed;
         this.m = copy.m;
         this.d = copy.d;
     }
@@ -111,7 +114,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
     private void checkSameArgs(L0Sampler that) {
         check(this.d, that.d, "Must have same depth: %d != %d");
         check(this.m, that.m, "Must have same width: %d != %d");
-        check(this.seed, that.seed, "Must have same seed: %d != %d");
+        check(this.originalSeed, that.originalSeed, "Must have same seed: %d != %d");
     }
 
 
