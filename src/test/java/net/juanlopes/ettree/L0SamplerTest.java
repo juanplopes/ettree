@@ -17,7 +17,7 @@ public class L0SamplerTest {
         for (int i = 0; i < 100; i++)
             sampler.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(54);
+        assertThat(sampler.recover()).isEqualTo(10);
     }
 
     @Test
@@ -31,8 +31,8 @@ public class L0SamplerTest {
         for (int i = 100; i < 200; i++)
             sampler2.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(54);
-        assertThat(sampler2.recover()).isEqualTo(298);
+        assertThat(sampler.recover()).isEqualTo(10);
+        assertThat(sampler2.recover()).isEqualTo(324);
     }
 
     @Test
@@ -47,13 +47,13 @@ public class L0SamplerTest {
         for (int i = 100; i < 200; i++)
             sampler2.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(54);
-        assertThat(sampler2.recover()).isEqualTo(298);
+        assertThat(sampler.recover()).isEqualTo(10);
+        assertThat(sampler2.recover()).isEqualTo(324);
     }
 
     @Test
     public void testCantRecover() throws Exception {
-        L0Sampler sampler = new L0Sampler(25, 1, 25);
+        L0Sampler sampler = new L0Sampler(25, 1, 26);
 
         for (int i = 0; i < 100; i++)
             sampler.update(i * 2, 100);
@@ -80,16 +80,16 @@ public class L0SamplerTest {
             sampler2.update(i * 2, 100);
         }
 
-        assertThat(sampler1.recover()).isEqualTo(68);
+        assertThat(sampler1.recover()).isEqualTo(12);
 
         sampler1.add(sampler2);
 
-        assertThat(sampler1.recover()).isEqualTo(114);
-        assertThat(sampler2.recover()).isEqualTo(114);
+        assertThat(sampler1.recover()).isEqualTo(166);
+        assertThat(sampler2.recover()).isEqualTo(166);
 
         sampler1.clear();
         assertThat(sampler1.recover()).isEqualTo(-1);
-        assertThat(sampler2.recover()).isEqualTo(114);
+        assertThat(sampler2.recover()).isEqualTo(166);
     }
 
     @Test
