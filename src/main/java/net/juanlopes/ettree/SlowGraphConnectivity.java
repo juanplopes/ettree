@@ -1,7 +1,5 @@
 package net.juanlopes.ettree;
 
-import java.util.Arrays;
-
 public class SlowGraphConnectivity {
     private final L0Sampler[] M;
     private long seed;
@@ -26,16 +24,16 @@ public class SlowGraphConnectivity {
         int aa = Math.min(a, b);
         int bb = Math.max(a, b);
 
-        M[a].update(aa * n + bb, 1);
-        M[b].update(aa * n + bb, -1);
+        M[aa].update(aa * n + bb, 1);
+        M[bb].update(aa * n + bb, -1);
     }
 
     public void removeEdge(int a, int b) {
         int aa = Math.min(a, b);
         int bb = Math.max(a, b);
 
-        M[a].update(aa * n + bb, -1);
-        M[b].update(aa * n + bb, 1);
+        M[aa].update(aa * n + bb, -1);
+        M[bb].update(aa * n + bb, 1);
     }
 
     public int bytes() {
@@ -50,13 +48,16 @@ public class SlowGraphConnectivity {
         uf.init(nodes);
         int components = nodes;
 
-        while(uf.recover(nodes, limit)) {
+        while (uf.recover(nodes, limit)) {
+            //System.out.println("WHAT");
             for (int v = 0; v < nodes; v++) {
                 int recovered = uf.E[v];
                 if (recovered >= 0) {
                     int a = recovered / n, b = recovered % n;
-                    if (uf.union(a, b))
+                    //System.out.println(a + " " + b);
+                    if (uf.union(a, b)) {
                         components--;
+                    }
                 }
             }
         }
@@ -104,13 +105,8 @@ public class SlowGraphConnectivity {
             return answer;
         }
 
-
-        public boolean root(int v) {
-            return P[v] == v;
-        }
-
         public int find(int v) {
-            if (!root(v))
+            if (P[v] != v)
                 return P[v] = find(P[v]);
             return v;
         }

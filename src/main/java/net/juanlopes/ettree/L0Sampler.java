@@ -13,7 +13,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         this.W0 = new int[m * d];
         this.W1 = new int[m * d];
         this.W2 = new int[m * d];
-        this.seed = seed;
+        this.seed = ((long) MurmurHash.hashLong(seed, 42) << 32 | MurmurHash.hashLong(seed, P));
         this.m = m;
         this.d = d;
     }
@@ -28,15 +28,15 @@ public class L0Sampler implements Mergeable<L0Sampler> {
     }
 
 
-    public void update(int i, long delta) {
+    public void update(int i, int delta) {
         int seed = (int) this.seed;
         for (int j = 0; j < d; j++) {
-            long hash = MurmurHash.hashLong(i, seed);
-            seed = (int) hash;
-            long croppedHash = hash & (1L << m) - 1;
+            int hash = MurmurHash.hashLong(i, seed);
+            seed = hash;
+            int croppedHash = hash & (1 << m) - 1;
             if (croppedHash == 0) croppedHash++;
 
-            int pos = Long.numberOfLeadingZeros(croppedHash) - (64 - m);
+            int pos = Integer.numberOfLeadingZeros(croppedHash) - (32 - m);
             innerUpdate(j * m + pos, i, delta);
         }
     }
@@ -70,11 +70,11 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         long free = 1;
         while (b > 1) {
             if ((b & 1) == 1)
-                free = (free * a) % P;
-            a = (a * a) % P;
+                free = Math.multiplyExact(free, a) % P;
+            a = Math.multiplyExact(a, a) % P;
             b >>= 1;
         }
-        return (a * free) % P;
+        return Math.multiplyExact(a, free) % P;
     }
 
     private void check(long v1, long v2, String msg) {
@@ -123,7 +123,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
     private void innerUpdate(int index, int i, long delta) {
         W0[index] += delta;
         W1[index] += delta * i;
-        W2[index] = m(W2[index] + m(delta * ppow(z(index), i)));
+        W2[index] = m((long) W2[index] + delta * ppow(z(index), i));
     }
 
     private int z(int index) {

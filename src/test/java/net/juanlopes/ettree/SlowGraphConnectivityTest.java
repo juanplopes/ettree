@@ -15,9 +15,17 @@ import java.util.stream.Collectors;
 
 public class SlowGraphConnectivityTest {
     @Test
+    public void name2() throws Exception {
+        SlowGraphConnectivity G = new SlowGraphConnectivity(10, 1, 23);
+        for (int i = 1; i < 10; i++)
+            G.addEdge(i, i - 1);
+        System.out.println(G.components());
+    }
+
+    @Test
     @Ignore
     public void name() throws Exception {
-        int nodes = 10000, tests = 128, d = 10, steps = 50;
+        int nodes = 1000, tests = 128, d = 10, steps = 50;
 
         int step = nodes / steps;
         double R[][] = new double[steps][d];
@@ -39,7 +47,7 @@ public class SlowGraphConnectivityTest {
                         int end = (k + 1) * step;
 
                         for (int i = start; i < end; i++) {
-                            for (int j = i - 1; j >= i - 32 && j >= 0; j--)
+                            for (int j = i - 1; j >= i - 4 && j >= 0; j--)
                                 G.addEdge(i, local.nextInt(i));
 
                             progress.incrementAndGet();

@@ -103,11 +103,32 @@ public class L0SamplerTest {
     }
 
     @Test
-    public void name2() throws Exception {
+    public void bug1() throws Exception {
         L0Sampler sampler = new L0Sampler(32, 11, -3387403153808684640L);
         sampler.update(10000, 1);
         sampler.update(1, -1);
         System.out.println(sampler.recover());
+    }
+
+    @Test
+    public void bug2() throws Exception {
+        for (int i = -100; i < 100; i++) {
+            L0Sampler s = new L0Sampler(12, 1, i);
+            L0Sampler s0 = new L0Sampler(12, 1, i);
+            L0Sampler s1 = new L0Sampler(12, 1, i);
+
+            s.update(1, 1);
+            s0.update(1, 1);
+
+            s.update(1, -1);
+            s1.update(1, -1);
+
+            s.update(12, 1);
+            s1.update(12, 1);
+            s0.add(s1);
+
+            assertThat(s0.recover()).isGreaterThan(0).describedAs("seed: %d", i).isEqualTo(s.recover());
+        }
     }
 
     @Test
@@ -165,10 +186,10 @@ public class L0SamplerTest {
         int[] V = new int[100000];
         for (int k = 0; k < 10000; k++) {
             long seed = random.nextLong();
-            L0Sampler sampler1 = new L0Sampler(32, 1, seed);
+            L0Sampler sampler1 = new L0Sampler(60, 1, seed);
 
-            for (int i = 0; i < 4; i++)
-                sampler1.update(i, 1);
+            sampler1.update(1, 1);
+            sampler1.update(2, 1);
 
             int count = 0, recovered;
 
@@ -176,6 +197,7 @@ public class L0SamplerTest {
                 count++;
                 sampler1.update(recovered, -1);
             }
+
 
             V[count]++;
         }
