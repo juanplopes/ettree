@@ -34,12 +34,12 @@ public class L0Sampler implements Mergeable<L0Sampler> {
     public void update(int i, int delta) {
         int seed = (int) this.seed;
         for (int j = 0; j < d; j++) {
-            int hash = MurmurHash.hashLong(i, seed);
-            seed = hash;
-            int croppedHash = hash & (1 << m) - 1;
+            long hash = (long) MurmurHash.hashLong(i, seed) << 32 | MurmurHash.hashLong(i, seed * 42);
+            seed = (int) hash;
+            long croppedHash = hash & (1L << m) - 1;
             if (croppedHash == 0) croppedHash++;
 
-            int pos = Integer.numberOfLeadingZeros(croppedHash) - (32 - m);
+            int pos = Long.numberOfLeadingZeros(croppedHash) - (64 - m);
             innerUpdate(j * m + pos, i, delta);
         }
     }
@@ -73,11 +73,11 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         long free = 1;
         while (b > 1) {
             if ((b & 1) == 1)
-                free = Math.multiplyExact(free, a) % P;
-            a = Math.multiplyExact(a, a) % P;
+                free = free * a % P;
+            a = a * a % P;
             b >>= 1;
         }
-        return Math.multiplyExact(a, free) % P;
+        return a * free % P;
     }
 
     private void check(long v1, long v2, String msg) {

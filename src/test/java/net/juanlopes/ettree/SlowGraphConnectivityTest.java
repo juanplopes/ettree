@@ -47,7 +47,7 @@ public class SlowGraphConnectivityTest {
                         int end = (k + 1) * step;
 
                         for (int i = start; i < end; i++) {
-                            for (int j = i - 1; j >= i - 4 && j >= 0; j--)
+                            for (int j = i - 1; j >= i - 32 && j >= 0; j--)
                                 G.addEdge(i, local.nextInt(i));
 
                             progress.incrementAndGet();
