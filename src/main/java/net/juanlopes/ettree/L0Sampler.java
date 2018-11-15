@@ -63,7 +63,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
     }
 
     public int bytes() {
-        return W0.length * 3 * 4 + 16;
+        return W0.length * 3 * 8 + 16;
     }
 
     private int size(int index) {

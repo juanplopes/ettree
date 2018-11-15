@@ -1,95 +1,186 @@
 package net.juanlopes.ettree;
 
+import org.assertj.core.data.Offset;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Random;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class L0SamplerTest {
+    private void assertHappens(double ratio, Function<Integer, Boolean> consumer) {
+        int count = 0;
+        for (int seed = 0; seed < 2000; seed++) {
+            if (consumer.apply(seed))
+                count++;
+        }
+        assertThat(count / 2000.0).isCloseTo(ratio, Offset.offset(0.01));
+    }
+
     @Test
     public void testSimpleSampling() throws Exception {
-        L0Sampler sampler = new L0Sampler(24, 1, 160);
-        assertThat(sampler.bytes()).isEqualTo(304);
+        assertHappens(0.8118, seed -> {
+            L0Sampler sampler = new L0Sampler(12, 1, seed);
+            assertThat(sampler.bytes()).isEqualTo(304);
 
-        for (int i = 0; i < 100; i++)
-            sampler.update(i * 2, 100);
+            for (int i = 0; i < 100; i++)
+                sampler.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(10);
+            long recovered = sampler.recover();
+            if (recovered < 0) return false;
+
+            assertThat(recovered).isBetween(0L, 198L);
+            assertThat(recovered % 2).isZero();
+            return true;
+        });
+    }
+
+    @Test
+    public void testSimpleSamplingDouble() throws Exception {
+        assertHappens(1 - (0.1882 * 0.1882), seed -> {
+            L0Sampler sampler = new L0Sampler(12, 2, seed);
+            assertThat(sampler.bytes()).isEqualTo(592);
+
+            for (int i = 0; i < 100; i++)
+                sampler.update(i * 2, 100);
+
+            long recovered = sampler.recover();
+            if (recovered < 0) return false;
+
+            assertThat(recovered).isBetween(0L, 198L);
+            assertThat(recovered % 2).isZero();
+            return true;
+        });
     }
 
     @Test
     public void testSimpleSamplingOnCopy() throws Exception {
-        L0Sampler sampler = new L0Sampler(24, 1, 160);
-        for (int i = 0; i < 100; i++)
-            sampler.update(i * 2, 100);
+        assertHappens(0.6842, seed -> {
+            L0Sampler sampler = new L0Sampler(12, 1, seed);
+            for (int i = 0; i < 100; i++)
+                sampler.update(i * 2, 100);
 
-        L0Sampler sampler2 = new L0Sampler(sampler);
+            L0Sampler sampler2 = new L0Sampler(sampler);
 
-        for (int i = 100; i < 200; i++)
-            sampler2.update(i * 2, 100);
+            for (int i = 100; i < 200; i++)
+                sampler2.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(10);
-        assertThat(sampler2.recover()).isEqualTo(324);
+            long rec1 = sampler.recover();
+            long rec2 = sampler2.recover();
+            if (rec1 < 0 || rec2 < 0) return false;
+            assertThat(rec1).isBetween(0L, 198L);
+            assertThat(rec2).isBetween(0L, 398L);
+            return true;
+        });
     }
 
     @Test
     public void testSimpleSamplingOnClearTo() throws Exception {
-        L0Sampler sampler = new L0Sampler(24, 1, 160);
-        for (int i = 0; i < 100; i++)
-            sampler.update(i * 2, 100);
+        assertHappens(0.6842, seed -> {
+            L0Sampler sampler = new L0Sampler(12, 1, seed);
+            for (int i = 0; i < 100; i++)
+                sampler.update(i * 2, 100);
 
-        L0Sampler sampler2 = new L0Sampler(24, 1, 160);
-        sampler2.clearTo(sampler);
+            L0Sampler sampler2 = new L0Sampler(12, 1, seed);
+            sampler2.clearTo(sampler);
 
-        for (int i = 100; i < 200; i++)
-            sampler2.update(i * 2, 100);
+            for (int i = 100; i < 200; i++)
+                sampler2.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(10);
-        assertThat(sampler2.recover()).isEqualTo(324);
+            long rec1 = sampler.recover();
+            long rec2 = sampler2.recover();
+            if (rec1 < 0 || rec2 < 0) return false;
+            assertThat(rec1).isBetween(0L, 198L);
+            assertThat(rec2).isBetween(0L, 398L);
+            return true;
+        });
     }
 
     @Test
     public void testCantRecover() throws Exception {
-        L0Sampler sampler = new L0Sampler(25, 1, 26);
+        assertHappens(0.1882, seed -> {
+            L0Sampler sampler = new L0Sampler(12, 1, seed);
 
-        for (int i = 0; i < 100; i++)
-            sampler.update(i * 2, 100);
+            for (int i = 0; i < 100; i++)
+                sampler.update(i * 2, 100);
 
-        assertThat(sampler.recover()).isEqualTo(-1);
+            return sampler.recover() == -1;
+        });
+
     }
 
     @Test
     public void testEmpty() throws Exception {
-        L0Sampler sampler = new L0Sampler(25, 1, 150);
+        assertHappens(1.0, seed -> {
+            L0Sampler sampler = new L0Sampler(12, 1, seed);
 
-        assertThat(sampler.recover()).isEqualTo(-1);
+            return sampler.recover() == -1;
+        });
+    }
+
+    @Test
+    public void testSingle() throws Exception {
+        assertHappens(1.0, seed -> {
+            L0Sampler sampler = new L0Sampler(12, 1, seed);
+            sampler.update(42, 100);
+
+            return sampler.recover() == 42;
+        });
+    }
+
+    @Test
+    public void testTwo() throws Exception {
+        assertHappens(2 / 3.0, seed -> {
+            L0Sampler sampler = new L0Sampler(12, 1, seed);
+            sampler.update(42, 100);
+            sampler.update(43, 100);
+
+            long rec = sampler.recover();
+            return rec == 42 || rec == 43;
+        });
     }
 
     @Test
     public void testMergeSampling() throws Exception {
-        L0Sampler sampler1 = new L0Sampler(25, 2, 7);
-        L0Sampler sampler2 = new L0Sampler(25, 2, 7);
+        assertHappens(0.568, seed -> {
+            L0Sampler sampler1 = new L0Sampler(12, 1, seed);
+            L0Sampler sampler2 = new L0Sampler(12, 1, seed);
 
-        for (int i = 0; i < 50; i++) {
-            sampler1.update(i * 2, 100);
-        }
-        for (int i = 50; i < 100; i++) {
-            sampler2.update(i * 2, 100);
-        }
+            for (int i = 0; i < 50; i++) {
+                sampler1.update(i * 2, 100);
+            }
+            for (int i = 50; i < 100; i++) {
+                sampler2.update(i * 2, 100);
+            }
 
-        assertThat(sampler1.recover()).isEqualTo(12);
+            long rec1 = sampler1.recover();
+            if (rec1 < 0) return false;
+            assertThat(rec1).isBetween(0L, 98L);
 
-        sampler1.add(sampler2);
+            sampler1.add(sampler2);
 
-        assertThat(sampler1.recover()).isEqualTo(166);
-        assertThat(sampler2.recover()).isEqualTo(166);
+            long rec1a = sampler1.recover();
+            if (rec1a < 0) return false;
+            assertThat(rec1a).isBetween(0L, 198L);
 
-        sampler1.clear();
-        assertThat(sampler1.recover()).isEqualTo(-1);
-        assertThat(sampler2.recover()).isEqualTo(166);
+            long rec2a = sampler2.recover();
+            if (rec2a < 0) return false;
+            assertThat(rec2a).isBetween(100L, 198L);
+
+            sampler1.clear();
+            long rec1b = sampler1.recover();
+            assertThat(rec1b).isEqualTo(-1);
+
+            long rec2b = sampler2.recover();
+            if (rec2b < 0) return false;
+            assertThat(rec2b).isBetween(100L, 198L);
+
+            return true;
+        });
     }
 
     @Test
