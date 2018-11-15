@@ -15,7 +15,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         this.W1 = new int[m * d];
         this.W2 = new int[m * d];
         this.originalSeed = seed;
-        this.seed = ((long) MurmurHash.hashLong(seed, 42) << 32 | MurmurHash.hashLong(seed, P));
+        this.seed = ((long) MurmurHash.hashLong(seed, 42)) << 32 | MurmurHash.hashLong(seed, P);
         this.m = m;
         this.d = d;
     }
@@ -32,10 +32,13 @@ public class L0Sampler implements Mergeable<L0Sampler> {
 
 
     public void update(int i, int delta) {
-        int seed = (int) this.seed;
+        int seed = (int) this.seed ^ (int) (this.seed >>> 32);
+
         for (int j = 0; j < d; j++) {
-            long hash = (long) MurmurHash.hashLong(i, seed) << 32 | MurmurHash.hashLong(i, seed * 42);
+            long hash = ((long) MurmurHash.hashLong(i, seed)) << 32
+                    | (MurmurHash.hashLong(i, seed + 1) & 0xFFFFFFFFL);
             seed = (int) hash;
+
             long croppedHash = hash & (1L << m) - 1;
             if (croppedHash == 0) croppedHash++;
 

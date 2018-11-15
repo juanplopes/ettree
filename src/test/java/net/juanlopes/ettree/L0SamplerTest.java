@@ -186,10 +186,10 @@ public class L0SamplerTest {
         int[] V = new int[100000];
         for (int k = 0; k < 10000; k++) {
             long seed = random.nextLong();
-            L0Sampler sampler1 = new L0Sampler(60, 1, seed);
+            L0Sampler sampler1 = new L0Sampler(12, 1, seed);
 
-            sampler1.update(1, 1);
-            sampler1.update(2, 1);
+            for (int i = 1; i <= 100; i++)
+                sampler1.update(i, 1);
 
             int count = 0, recovered;
 

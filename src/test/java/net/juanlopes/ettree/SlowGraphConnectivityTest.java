@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class SlowGraphConnectivityTest {
     @Test
@@ -30,7 +31,7 @@ public class SlowGraphConnectivityTest {
         int step = nodes / steps;
         double R[][] = new double[steps][d];
         int C[][] = new int[steps][d];
-        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
         CountDownLatch finished = new CountDownLatch(tests);
         AtomicLong progress = new AtomicLong(0);
@@ -47,7 +48,7 @@ public class SlowGraphConnectivityTest {
                         int end = (k + 1) * step;
 
                         for (int i = start; i < end; i++) {
-                            for (int j = i - 1; j >= i - 32 && j >= 0; j--)
+                            for (int j = i - 1; j >= i - 1 && j >= 0; j--)
                                 G.addEdge(i, local.nextInt(i));
 
                             progress.incrementAndGet();
@@ -80,6 +81,7 @@ public class SlowGraphConnectivityTest {
         long start = System.nanoTime();
         long total = nodes * tests;
         long lastCount = 0;
+        int iters = 0;
         while (!finished.await(1, TimeUnit.SECONDS)) {
             long count = progress.get();
             long now = System.nanoTime();
@@ -94,20 +96,23 @@ public class SlowGraphConnectivityTest {
                         Math.round((now - start) / 1e9)));
             }
             lastCount = count;
+
+            if (++iters % 600 == 0)
+                printr(steps, step, R, C);
+
         }
+        printr(steps, step, R, C);
 
+    }
 
+    private void printr(int steps, int step, double[][] R, int[][] C) {
         for (int k = 0; k < steps; k++) {
-            for (int i = 1; i < R[k].length; i++) {
-                /*if (C[k][i] != tests)
-                    System.out.println(String.format("meh %d %d %d %d", k, i, C[k][i], tests));*/
-                R[k][i] /= Math.max(C[k][i], 1);
-            }
-
-            String line = Arrays.stream(R[k]).skip(1).mapToObj(x -> "\t" + x).collect(Collectors.joining());
+            int kk = k;
+            String line = IntStream.range(1, R[k].length)
+                    .mapToObj(i -> "\t" + R[kk][i] / Math.max(C[kk][i], 1))
+                    .collect(Collectors.joining());
             System.out.println((k + 1) * step + line);
         }
-
     }
 
 }

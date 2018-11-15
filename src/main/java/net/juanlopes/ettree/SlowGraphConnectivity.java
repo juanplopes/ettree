@@ -46,15 +46,14 @@ public class SlowGraphConnectivity {
 
     public int components(int nodes, int limit) {
         uf.init(nodes);
-        int components = nodes;
 
-        while (uf.recover(nodes, limit)) {
-            //System.out.println("WHAT");
+        int layers = (int) Math.ceil(Math.log(nodes) / Math.log(2));
+        int components = nodes;
+        while (layers-- > 0 && components > 1 && uf.recover(nodes, limit)) {
             for (int v = 0; v < nodes; v++) {
                 int recovered = uf.E[v];
                 if (recovered >= 0) {
                     int a = recovered / n, b = recovered % n;
-                    //System.out.println(a + " " + b);
                     if (uf.union(a, b)) {
                         components--;
                     }
