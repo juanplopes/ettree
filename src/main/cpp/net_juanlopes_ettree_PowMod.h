@@ -9,11 +9,11 @@ extern "C" {
 #endif
 /*
  * Class:     net_juanlopes_ettree_PowMod
- * Method:    boostPowM
- * Signature: (JJJ)J
+ * Method:    modop
+ * Signature: (JJJJ)J
  */
-JNIEXPORT jlong JNICALL Java_net_juanlopes_ettree_PowMod_boostPowM
-  (JNIEnv *, jclass, jlong, jlong, jlong);
+JNIEXPORT jlong JNICALL Java_net_juanlopes_ettree_PowMod_modop
+  (JNIEnv *, jclass, jlong, jlong, jlong, jlong);
 
 #ifdef __cplusplus
 }

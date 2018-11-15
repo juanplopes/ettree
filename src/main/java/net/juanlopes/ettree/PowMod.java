@@ -1,25 +1,32 @@
 package net.juanlopes.ettree;
 
-public class PowMod {
-//    public static native long boostPowM(long a, long b, long p);
-//
-//    static {
-//        //System.load("/gh/ettree/src/main/cpp/libpowmod.so");
-//    }
-//
-//    public static long fast(long a, long b, long p) {
-//        return boostPowM(a, b, p);
-//    }
-//
-    public static long slow(long a, long b, long p) {
-        long free = 1;
+public abstract class PowMod {
+    public static final long P = 4611686018427387847L;
+
+    private static native long modop(long x, long c, long a, long b);
+
+    static {
+        System.load("/home/juanplopes/gh/ettree/src/main/cpp/libpowmod.so");
+    }
+
+    public static long op(long x, long c, long a, long b) {
+        return modop(x, c, a, b);
+    }
+
+
+    public static long fast(long x, long c, long a, long b) {
+        return modop(x, c, a, b);
+    }
+
+    public static long slow(long x, long c, long a, long b) {
+        long free = c % P;
         while (b > 1) {
             if ((b & 1) == 1)
-                free = free * a % p;
-            a = a * a % p;
+                free = free * a % P;
+            a = a * a % P;
             b >>= 1;
         }
-        return a * free % p;
+        return (x + a * free % P) % P;
     }
 
 }

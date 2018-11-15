@@ -142,7 +142,7 @@ public class L0SamplerTest {
             sampler.update(10000, 1);
             sampler.update(1, -1);
 
-            int recovered = sampler.recover();
+            long recovered = sampler.recover();
             if (recovered < 0)
                 count++;
         }
@@ -164,9 +164,9 @@ public class L0SamplerTest {
             sampler1.update(1, 1);
             sampler1.update(2, 1);
 
-            int recovered = sampler1.recover();
+            long recovered = sampler1.recover();
             if (recovered >= 0)
-                V[recovered % 6]++;
+                V[(int) (recovered % 6)]++;
             else
                 fail++;
 
@@ -186,12 +186,13 @@ public class L0SamplerTest {
         int[] V = new int[100000];
         for (int k = 0; k < 10000; k++) {
             long seed = random.nextLong();
-            L0Sampler sampler1 = new L0Sampler(12, 1, seed);
+            L0Sampler sampler1 = new L0Sampler(48, 1, seed);
 
             for (int i = 1; i <= 100; i++)
                 sampler1.update(i, 1);
 
-            int count = 0, recovered;
+            int count = 0;
+            long recovered;
 
             while ((recovered = sampler1.recover()) >= 0) {
                 count++;

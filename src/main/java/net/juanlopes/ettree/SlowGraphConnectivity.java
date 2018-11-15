@@ -24,8 +24,8 @@ public class SlowGraphConnectivity {
         int aa = Math.min(a, b);
         int bb = Math.max(a, b);
 
-        M[aa].update(aa * n + bb, 1);
-        M[bb].update(aa * n + bb, -1);
+        M[aa].update((long) aa * n + bb, 1);
+        M[bb].update((long) aa * n + bb, -1);
     }
 
     public void removeEdge(int a, int b) {
@@ -51,9 +51,9 @@ public class SlowGraphConnectivity {
         int components = nodes;
         while (layers-- > 0 && components > 1 && uf.recover(nodes, limit)) {
             for (int v = 0; v < nodes; v++) {
-                int recovered = uf.E[v];
+                long recovered = uf.E[v];
                 if (recovered >= 0) {
-                    int a = recovered / n, b = recovered % n;
+                    int a = (int) (recovered / n), b = (int) (recovered % n);
                     if (uf.union(a, b)) {
                         components--;
                     }
@@ -69,13 +69,13 @@ public class SlowGraphConnectivity {
         private final int[] P;
         private final L0Sampler[] M;
         private final int S[];
-        private final int E[];
+        private final long E[];
 
         public UnionFind() {
             this.P = new int[n];
             this.M = new L0Sampler[n];
             this.S = new int[n];
-            this.E = new int[n];
+            this.E = new long[n];
 
             for (int i = 0; i < n; i++) {
                 P[i] = i;
