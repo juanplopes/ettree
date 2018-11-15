@@ -279,7 +279,7 @@ public class L0SamplerTest {
             long seed = random.nextLong();
             L0Sampler sampler1 = new L0Sampler(48, 1, seed);
 
-            for (int i = 1; i <= 100; i++)
+            for (int i = 1; i <= 2; i++)
                 sampler1.update(i, 1);
 
             int count = 0;
@@ -295,7 +295,7 @@ public class L0SamplerTest {
         }
 
         double mean = 0;
-        for (int i = 0; i < 40; i++) {
+        for (int i = 0; i < 10; i++) {
             mean += i * V[i];
             System.out.println(i + " " + V[i]);
         }
