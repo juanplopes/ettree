@@ -16,15 +16,15 @@ __int128_t powm(__int128_t a, __int128_t b) {
     return a * free % P;
 }
 
-__int128_t modopint(__int128_t x, __int128_t c, __int128_t a, __int128_t b) {
-    __int128_t r = (x + c*powm(a, b))%P;
+__int128_t modopint(__int128_t c, __int128_t a, __int128_t b) {
+    __int128_t r = c*powm(a, b)%P;
     if (r < 0) r+=P;
     return r;
 }
 
 JNIEXPORT jlong JNICALL Java_net_juanlopes_ettree_PowMod_modop
-  (JNIEnv* env, jclass obj, jlong x, jlong c, jlong a, jlong b) {
-    return modopint(x, c, a, b);
+  (JNIEnv* env, jclass obj, jlong c, jlong a, jlong b) {
+    return modopint(c, a, b);
 }
 
 

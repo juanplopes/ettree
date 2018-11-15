@@ -32,12 +32,10 @@ public class L0Sampler implements Mergeable<L0Sampler> {
 
 
     public void update(long i, long delta) {
-        int seed = (int) this.seed ^ (int) (this.seed >>> 32);
+        long hash = this.seed;
 
         for (int j = 0; j < d; j++) {
-            long hash = mer(MurmurHash.hashLong(i, seed),
-                    MurmurHash.hashLong(i, seed + 1));
-            seed = (int) hash;
+            hash = MurmurHash.hashLong(i, hash);
 
             long croppedHash = hash & (1L << m) - 1;
             if (croppedHash == 0) croppedHash++;
@@ -68,7 +66,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
 
     private int size(int index) {
         if (W0[index] == 0) return 0;
-        if (W2[index] != PowMod.op(0, W0[index], z(index), W1[index] / W0[index])) return 2;
+        if (W2[index] != PowMod.op(W0[index], z(index), W1[index] / W0[index])) return 2;
         return 1;
     }
 
@@ -99,7 +97,7 @@ public class L0Sampler implements Mergeable<L0Sampler> {
         for (int i = 0; i < this.W0.length; i++) {
             W0[i] += that.W0[i];
             W1[i] += that.W1[i];
-            W2[i] = (W2[i] + that.W2[i]) % P;
+            W2[i] = m(W2[i] + that.W2[i]);
         }
     }
 
@@ -113,15 +111,15 @@ public class L0Sampler implements Mergeable<L0Sampler> {
     private void innerUpdate(int index, long i, long delta) {
         W0[index] += delta;
         W1[index] += delta * i;
-        W2[index] = PowMod.op(W2[index], delta, z(index), i);
+        W2[index] = m(W2[index] + PowMod.op(delta, z(index), i));
     }
 
-    private long mer(int a, int b) {
-        return (long) a << 32 | b & 0xFFFFFFFFL;
+    private long m(long a) {
+        if (a > P) return a - P;
+        return a;
     }
 
     private long z(int index) {
-        return mer(MurmurHash.hashLong(index, (int) (this.seed >>> 32)),
-                MurmurHash.hashLong(index, (int) (this.seed >>> 32 + 1)));
+        return MurmurHash.hashLong(index, this.seed + 1);
     }
 }

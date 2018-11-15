@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     net_juanlopes_ettree_PowMod
  * Method:    modop
- * Signature: (JJJJ)J
+ * Signature: (JJJ)J
  */
 JNIEXPORT jlong JNICALL Java_net_juanlopes_ettree_PowMod_modop
-  (JNIEnv *, jclass, jlong, jlong, jlong, jlong);
+  (JNIEnv *, jclass, jlong, jlong, jlong);
 
 #ifdef __cplusplus
 }
