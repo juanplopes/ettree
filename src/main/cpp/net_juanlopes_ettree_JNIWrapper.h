@@ -35,6 +35,22 @@ JNIEXPORT void JNICALL Java_net_juanlopes_ettree_JNIWrapper_destroy
 
 /*
  * Class:     net_juanlopes_ettree_JNIWrapper
+ * Method:    merge
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_net_juanlopes_ettree_JNIWrapper_merge
+  (JNIEnv *, jclass, jlong, jlong);
+
+/*
+ * Class:     net_juanlopes_ettree_JNIWrapper
+ * Method:    clear
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_net_juanlopes_ettree_JNIWrapper_clear
+  (JNIEnv *, jclass, jlong, jlong);
+
+/*
+ * Class:     net_juanlopes_ettree_JNIWrapper
  * Method:    update
  * Signature: (JJJ)V
  */

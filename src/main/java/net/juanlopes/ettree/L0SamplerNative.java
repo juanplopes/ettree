@@ -1,6 +1,7 @@
 package net.juanlopes.ettree;
 
 import java.io.Closeable;
+import java.util.Locale;
 
 public class L0SamplerNative implements L0Sampler<L0SamplerNative>, Closeable {
     private final int m;
@@ -13,6 +14,18 @@ public class L0SamplerNative implements L0Sampler<L0SamplerNative>, Closeable {
         this.d = d;
         this.seed = seed;
         this.instance = JNIWrapper.create(m, d, seed);
+    }
+
+    private void check(long v1, long v2, String msg) {
+        if (v1 != v2)
+            throw new IllegalArgumentException(String.format((Locale) null, msg, v1, v2));
+    }
+
+
+    private void checkSameArgs(L0SamplerNative that) {
+        check(this.d, that.d, "Must have same depth: %d != %d");
+        check(this.m, that.m, "Must have same width: %d != %d");
+        check(this.seed, that.seed, "Must have same seed: %d != %d");
     }
 
     @Override
@@ -40,11 +53,13 @@ public class L0SamplerNative implements L0Sampler<L0SamplerNative>, Closeable {
 
     @Override
     public void clearTo(L0SamplerNative sampler) {
+        checkSameArgs(sampler);
         JNIWrapper.clear(instance, sampler.instance);
     }
 
     @Override
     public void add(L0SamplerNative other) {
+        checkSameArgs(other);
         JNIWrapper.merge(instance, other.instance);
     }
 

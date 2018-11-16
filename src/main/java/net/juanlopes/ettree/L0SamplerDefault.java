@@ -15,7 +15,7 @@ public final class L0SamplerDefault implements L0Sampler<L0SamplerDefault> {
         this.W1 = new long[m * d];
         this.W2 = new long[m * d];
         this.originalSeed = seed;
-        this.seed = ((long) MurmurHash.hashLong(seed, 42)) << 32 | MurmurHash.hashLong(seed, 43);
+        this.seed = MurmurHash.hashLong(seed, 123L);
         this.m = m;
         this.d = d;
     }
@@ -110,7 +110,7 @@ public final class L0SamplerDefault implements L0Sampler<L0SamplerDefault> {
     }
 
     private long m(long a) {
-        if (a > P) return a - P;
+        if (a >= P) return a - P;
         return a;
     }
 

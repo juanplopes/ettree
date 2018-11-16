@@ -203,19 +203,9 @@ public class L0SamplerNativeTest {
     @Test
     @Ignore
     public void name() throws Exception {
-        Random random = new Random();
-        int count = 0;
-        for (int k = 0; k < 10000; k++) {
-            L0SamplerNative sampler = new L0SamplerNative(32, 1, random.nextLong());
-
-            sampler.update(10000, 1);
-            sampler.update(1, -1);
-
-            long recovered = sampler.recover();
-            if (recovered < 0)
-                count++;
-        }
-        System.out.println(count);
+        L0SamplerNative sampler = new L0SamplerNative(32, 1, 42);
+        sampler.update(10000, 1);
+        System.out.println(sampler.recover());
 
     }
 
@@ -257,13 +247,14 @@ public class L0SamplerNativeTest {
             long seed = random.nextLong();
             L0SamplerNative sampler1 = new L0SamplerNative(48, 1, seed);
 
-            for (int i = 1; i <= 2; i++)
+            for (int i = 1; i <= 100; i++)
                 sampler1.update(i, 1);
 
             int count = 0;
             long recovered;
 
             while ((recovered = sampler1.recover()) >= 0) {
+                System.out.println(recovered);
                 count++;
                 sampler1.update(recovered, -1);
             }

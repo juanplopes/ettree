@@ -1,7 +1,7 @@
 package net.juanlopes.ettree;
 
 public class SlowGraphConnectivity {
-    private final L0SamplerDefault[] M;
+    private final L0SamplerNative[] M;
     private long seed;
     private final UnionFind uf;
 
@@ -14,9 +14,9 @@ public class SlowGraphConnectivity {
         this.d = d;
         this.m = (int) Math.ceil(2 * Math.log(n) / Math.log(2)) + 5;
         this.seed = seed;
-        this.M = new L0SamplerDefault[n];
+        this.M = new L0SamplerNative[n];
         for (int i = 0; i < n; i++)
-            M[i] = new L0SamplerDefault(m, d, seed);
+            M[i] = new L0SamplerNative(m, d, seed);
         this.uf = new UnionFind();
     }
 
@@ -67,19 +67,19 @@ public class SlowGraphConnectivity {
 
     private class UnionFind {
         private final int[] P;
-        private final L0SamplerDefault[] M;
+        private final L0SamplerNative[] M;
         private final int S[];
         private final long E[];
 
         public UnionFind() {
             this.P = new int[n];
-            this.M = new L0SamplerDefault[n];
+            this.M = new L0SamplerNative[n];
             this.S = new int[n];
             this.E = new long[n];
 
             for (int i = 0; i < n; i++) {
                 P[i] = i;
-                M[i] = new L0SamplerDefault(m, d, seed);
+                M[i] = new L0SamplerNative(m, d, seed);
                 S[i] = 1;
             }
         }

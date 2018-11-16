@@ -58,7 +58,7 @@ public class L0SamplerDefaultTest {
 
     @Test
     public void testSimpleSamplingOnClearTo() throws Exception {
-        assertHappens(0.6842, seed -> {
+        assertHappens(0.6945, seed -> {
             L0SamplerDefault sampler = new L0SamplerDefault(12, 1, seed);
             for (int i = 0; i < 100; i++)
                 sampler.update(i * 2, 100);
@@ -124,7 +124,7 @@ public class L0SamplerDefaultTest {
 
     @Test
     public void testMergeSampling() throws Exception {
-        assertHappens(0.568, seed -> {
+        assertHappens(0.5535, seed -> {
             L0SamplerDefault sampler1 = new L0SamplerDefault(12, 1, seed);
             L0SamplerDefault sampler2 = new L0SamplerDefault(12, 1, seed);
 
