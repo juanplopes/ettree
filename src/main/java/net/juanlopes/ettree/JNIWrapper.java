@@ -18,6 +18,6 @@ public abstract class JNIWrapper {
     public static native long recover(long instance, int start, int end);
 
     static {
-        System.load("/home/juanplopes/gh/ettree/src/main/cpp/libl0sampler.so");
+        System.load("/gh/ettree/src/main/cpp/libl0sampler.so");
     }
 }

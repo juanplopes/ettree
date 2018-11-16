@@ -1,16 +1,17 @@
 package net.juanlopes.ettree;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
 
-public final class L0SamplerDefault implements L0Sampler<L0SamplerDefault> {
+public final class L0SamplerMixed implements L0Sampler<L0SamplerMixed> {
     private static final long P = JNIWrapper.P;
     public final long[] W0, W1, W2;
     private final long seed;
     private final int m, d;
     private final long originalSeed;
 
-    public L0SamplerDefault(int m, int d, long seed) {
+    public L0SamplerMixed(int m, int d, long seed) {
         this.W0 = new long[m * d];
         this.W1 = new long[m * d];
         this.W2 = new long[m * d];
@@ -77,7 +78,7 @@ public final class L0SamplerDefault implements L0Sampler<L0SamplerDefault> {
     }
 
     @Override
-    public void clearTo(L0SamplerDefault sampler) {
+    public void clearTo(L0SamplerMixed sampler) {
         checkSameArgs(sampler);
 
         System.arraycopy(sampler.W0, 0, W0, 0, W0.length);
@@ -86,7 +87,7 @@ public final class L0SamplerDefault implements L0Sampler<L0SamplerDefault> {
     }
 
     @Override
-    public void add(L0SamplerDefault that) {
+    public void add(L0SamplerMixed that) {
         checkSameArgs(that);
 
         for (int i = 0; i < this.W0.length; i++) {
@@ -96,7 +97,7 @@ public final class L0SamplerDefault implements L0Sampler<L0SamplerDefault> {
         }
     }
 
-    private void checkSameArgs(L0SamplerDefault that) {
+    private void checkSameArgs(L0SamplerMixed that) {
         check(this.d, that.d, "Must have same depth: %d != %d");
         check(this.m, that.m, "Must have same width: %d != %d");
         check(this.originalSeed, that.originalSeed, "Must have same seed: %d != %d");
@@ -116,5 +117,10 @@ public final class L0SamplerDefault implements L0Sampler<L0SamplerDefault> {
 
     private long z(int index) {
         return MurmurHash.hashLong(index, this.seed + 1);
+    }
+
+    @Override
+    public void close() {
+
     }
 }

@@ -16,15 +16,6 @@ import java.util.stream.IntStream;
 
 public class SlowGraphConnectivityTest {
     @Test
-    public void name2() throws Exception {
-        SlowGraphConnectivity G = new SlowGraphConnectivity(1000, 10, 23);
-        System.out.println(G.bytes());
-        for (int i = 1; i < 10; i++)
-            G.addEdge(i, i - 1);
-        System.out.println(G.components());
-    }
-
-    @Test
     @Ignore
     public void name() throws Exception {
         int nodes = 1000, tests = 512, d = 10, steps = 50;

@@ -3,7 +3,7 @@ package net.juanlopes.ettree;
 import java.io.Closeable;
 import java.util.Locale;
 
-public class L0SamplerNative implements L0Sampler<L0SamplerNative>, Closeable {
+public final class L0SamplerNative implements L0Sampler<L0SamplerNative>, Closeable {
     private final int m;
     private final int d;
     private final long seed;
@@ -29,9 +29,8 @@ public class L0SamplerNative implements L0Sampler<L0SamplerNative>, Closeable {
     }
 
     @Override
-    protected void finalize() throws Throwable {
+    protected void finalize() {
         close();
-        super.finalize();
     }
 
     public void update(long i, long delta) {
