@@ -1,4 +1,4 @@
-#include "net_juanlopes_ettree_PowMod.h"
+#include "net_juanlopes_ettree_JNIWrapper.h"
 #include <iostream>
 #include <cmath>
 #define P 4611686018427387847ll
@@ -22,7 +22,7 @@ __int128_t modopint(__int128_t c, __int128_t a, __int128_t b) {
     return r;
 }
 
-JNIEXPORT jlong JNICALL Java_net_juanlopes_ettree_PowMod_modop
+JNIEXPORT jlong JNICALL Java_net_juanlopes_ettree_JNIWrapper_powm
   (JNIEnv* env, jclass obj, jlong c, jlong a, jlong b) {
     return modopint(c, a, b);
 }

@@ -5,13 +5,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Random;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class L0SamplerTest {
+public class L0SamplerDefaultTest {
     private void assertHappens(double ratio, Function<Integer, Boolean> consumer) {
         int count = 0;
         for (int seed = 0; seed < 2000; seed++) {
@@ -24,7 +23,7 @@ public class L0SamplerTest {
     @Test
     public void testSimpleSampling() throws Exception {
         assertHappens(0.8118, seed -> {
-            L0Sampler sampler = new L0Sampler(12, 1, seed);
+            L0SamplerDefault sampler = new L0SamplerDefault(12, 1, seed);
             assertThat(sampler.bytes()).isEqualTo(304);
 
             for (int i = 0; i < 100; i++)
@@ -42,7 +41,7 @@ public class L0SamplerTest {
     @Test
     public void testSimpleSamplingDouble() throws Exception {
         assertHappens(1 - (0.1882 * 0.1882), seed -> {
-            L0Sampler sampler = new L0Sampler(12, 2, seed);
+            L0SamplerDefault sampler = new L0SamplerDefault(12, 2, seed);
             assertThat(sampler.bytes()).isEqualTo(592);
 
             for (int i = 0; i < 100; i++)
@@ -58,34 +57,13 @@ public class L0SamplerTest {
     }
 
     @Test
-    public void testSimpleSamplingOnCopy() throws Exception {
-        assertHappens(0.6842, seed -> {
-            L0Sampler sampler = new L0Sampler(12, 1, seed);
-            for (int i = 0; i < 100; i++)
-                sampler.update(i * 2, 100);
-
-            L0Sampler sampler2 = new L0Sampler(sampler);
-
-            for (int i = 100; i < 200; i++)
-                sampler2.update(i * 2, 100);
-
-            long rec1 = sampler.recover();
-            long rec2 = sampler2.recover();
-            if (rec1 < 0 || rec2 < 0) return false;
-            assertThat(rec1).isBetween(0L, 198L);
-            assertThat(rec2).isBetween(0L, 398L);
-            return true;
-        });
-    }
-
-    @Test
     public void testSimpleSamplingOnClearTo() throws Exception {
         assertHappens(0.6842, seed -> {
-            L0Sampler sampler = new L0Sampler(12, 1, seed);
+            L0SamplerDefault sampler = new L0SamplerDefault(12, 1, seed);
             for (int i = 0; i < 100; i++)
                 sampler.update(i * 2, 100);
 
-            L0Sampler sampler2 = new L0Sampler(12, 1, seed);
+            L0SamplerDefault sampler2 = new L0SamplerDefault(12, 1, seed);
             sampler2.clearTo(sampler);
 
             for (int i = 100; i < 200; i++)
@@ -103,7 +81,7 @@ public class L0SamplerTest {
     @Test
     public void testCantRecover() throws Exception {
         assertHappens(0.1882, seed -> {
-            L0Sampler sampler = new L0Sampler(12, 1, seed);
+            L0SamplerDefault sampler = new L0SamplerDefault(12, 1, seed);
 
             for (int i = 0; i < 100; i++)
                 sampler.update(i * 2, 100);
@@ -116,7 +94,7 @@ public class L0SamplerTest {
     @Test
     public void testEmpty() throws Exception {
         assertHappens(1.0, seed -> {
-            L0Sampler sampler = new L0Sampler(12, 1, seed);
+            L0SamplerDefault sampler = new L0SamplerDefault(12, 1, seed);
 
             return sampler.recover() == -1;
         });
@@ -125,7 +103,7 @@ public class L0SamplerTest {
     @Test
     public void testSingle() throws Exception {
         assertHappens(1.0, seed -> {
-            L0Sampler sampler = new L0Sampler(12, 1, seed);
+            L0SamplerDefault sampler = new L0SamplerDefault(12, 1, seed);
             sampler.update(42, 100);
 
             return sampler.recover() == 42;
@@ -135,7 +113,7 @@ public class L0SamplerTest {
     @Test
     public void testTwo() throws Exception {
         assertHappens(2 / 3.0, seed -> {
-            L0Sampler sampler = new L0Sampler(12, 1, seed);
+            L0SamplerDefault sampler = new L0SamplerDefault(12, 1, seed);
             sampler.update(42, 100);
             sampler.update(43, 100);
 
@@ -147,8 +125,8 @@ public class L0SamplerTest {
     @Test
     public void testMergeSampling() throws Exception {
         assertHappens(0.568, seed -> {
-            L0Sampler sampler1 = new L0Sampler(12, 1, seed);
-            L0Sampler sampler2 = new L0Sampler(12, 1, seed);
+            L0SamplerDefault sampler1 = new L0SamplerDefault(12, 1, seed);
+            L0SamplerDefault sampler2 = new L0SamplerDefault(12, 1, seed);
 
             for (int i = 0; i < 50; i++) {
                 sampler1.update(i * 2, 100);
@@ -185,8 +163,8 @@ public class L0SamplerTest {
 
     @Test
     public void cantMergeDifferentSeed() throws Exception {
-        L0Sampler sampler1 = new L0Sampler(25, 1, 160);
-        L0Sampler sampler2 = new L0Sampler(25, 1, 150);
+        L0SamplerDefault sampler1 = new L0SamplerDefault(25, 1, 160);
+        L0SamplerDefault sampler2 = new L0SamplerDefault(25, 1, 150);
 
         assertThatThrownBy(() -> sampler1.add(sampler2))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -195,7 +173,7 @@ public class L0SamplerTest {
 
     @Test
     public void bug1() throws Exception {
-        L0Sampler sampler = new L0Sampler(32, 11, -3387403153808684640L);
+        L0SamplerDefault sampler = new L0SamplerDefault(32, 11, -3387403153808684640L);
         sampler.update(10000, 1);
         sampler.update(1, -1);
         System.out.println(sampler.recover());
@@ -204,9 +182,9 @@ public class L0SamplerTest {
     @Test
     public void bug2() throws Exception {
         for (int i = -100; i < 100; i++) {
-            L0Sampler s = new L0Sampler(12, 1, i);
-            L0Sampler s0 = new L0Sampler(12, 1, i);
-            L0Sampler s1 = new L0Sampler(12, 1, i);
+            L0SamplerDefault s = new L0SamplerDefault(12, 1, i);
+            L0SamplerDefault s0 = new L0SamplerDefault(12, 1, i);
+            L0SamplerDefault s1 = new L0SamplerDefault(12, 1, i);
 
             s.update(1, 1);
             s0.update(1, 1);
@@ -228,7 +206,7 @@ public class L0SamplerTest {
         Random random = new Random();
         int count = 0;
         for (int k = 0; k < 10000; k++) {
-            L0Sampler sampler = new L0Sampler(32, 1, random.nextLong());
+            L0SamplerDefault sampler = new L0SamplerDefault(32, 1, random.nextLong());
 
             sampler.update(10000, 1);
             sampler.update(1, -1);
@@ -250,7 +228,7 @@ public class L0SamplerTest {
         int fail = 0;
         for (int k = 0; k < 10000; k++) {
             long seed = random.nextLong();
-            L0Sampler sampler1 = new L0Sampler(10, 4, seed);
+            L0SamplerDefault sampler1 = new L0SamplerDefault(10, 4, seed);
 
             sampler1.update(1, 1);
             sampler1.update(2, 1);
@@ -277,7 +255,7 @@ public class L0SamplerTest {
         int[] V = new int[100000];
         for (int k = 0; k < 10000; k++) {
             long seed = random.nextLong();
-            L0Sampler sampler1 = new L0Sampler(48, 1, seed);
+            L0SamplerDefault sampler1 = new L0SamplerDefault(48, 1, seed);
 
             for (int i = 1; i <= 2; i++)
                 sampler1.update(i, 1);
