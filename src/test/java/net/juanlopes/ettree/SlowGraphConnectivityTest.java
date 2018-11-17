@@ -18,7 +18,7 @@ public class SlowGraphConnectivityTest {
     @Test
     @Ignore
     public void name() throws Exception {
-        int nodes = 1000, tests = 512, d = 10, steps = 50;
+        int nodes = 1000, tests = 1024, d = 6, steps = 50;
 
         int step = nodes / steps;
         double R[][] = new double[steps][d + 1];
