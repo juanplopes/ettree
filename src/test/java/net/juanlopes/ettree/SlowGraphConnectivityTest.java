@@ -17,8 +17,25 @@ import java.util.stream.IntStream;
 public class SlowGraphConnectivityTest {
     @Test
     @Ignore
+    public void name2() throws Exception {
+        Random random = new Random();
+
+        long seed = 3755556779405418679L;
+        SlowGraphConnectivity G = new SlowGraphConnectivity(6, 10, seed);
+        Random local = new Random(seed);
+
+        for (int i = 0; i < 6; i++) {
+            for (int j = i - 1; j >= i - 64 && j >= 0; j--)
+                G.addEdge(i, local.nextInt(i));
+        }
+
+        System.out.println(G.test(6, 10));
+    }
+
+    @Test
+    @Ignore
     public void name() throws Exception {
-        int nodes = 1000, tests = 1024, d = 6, steps = 50;
+        int nodes = 1000, tests = 1024, d = 10, steps = 50;
 
         int step = nodes / steps;
         double R[][] = new double[steps][d + 1];
@@ -45,21 +62,15 @@ public class SlowGraphConnectivityTest {
 
                             progress.incrementAndGet();
                         }
-                        for (int i = 1; i <= d; i++) {
-                            try {
-                                //System.out.println(G.components(end, i));
+                        //System.out.println(G.components(end, i));
 
-                                if (G.components(end, i) == 1) {
-                                    synchronized (R) {
-                                        R[k][i]++;
-                                    }
-                                }
-                                synchronized (C) {
-                                    C[k][i]++;
-                                }
-                            } catch (Throwable e) {
-                                e.printStackTrace();
-                            }
+                        int err = G.test(end, d);
+
+                        synchronized (R) {
+                            for (int i = err + 1; i <= d; i++)
+                                R[k][i]++;
+                            for (int i = 1; i <= d; i++)
+                                C[k][i]++;
                         }
                     }
                 } catch (Throwable e) {

@@ -19,9 +19,37 @@ public class L0SamplerJavaTest extends L0SamplerBaseTest<L0SamplerJava> {
     }
 
     @Test
+    public void playground() throws Exception {
+        Random random = new Random();
+        int count = 0, total = 0;
+        for (int k = 0; k < 100000; k++) {
+            long seed = random.nextLong();
+            L0SamplerJava sampler1 = create(20, 1, seed);
+            for (int i = 1; i <= 100; i++)
+                sampler1.update(random.nextInt(10000) + 1, 1);
+
+            long rec1 = sampler1.recover();
+            if (rec1 < 0) continue;
+
+            L0SamplerJava sampler2 = create(20, 1, seed);
+            sampler2.update(rec1, -1);
+
+            for (int i = 2; i <= 800; i++)
+                sampler2.update(random.nextInt(10000) + 1, 1);
+            sampler1.add(sampler2);
+
+
+            total++;
+            if (sampler1.recover() >= 0)
+                count++;
+        }
+        System.out.println(count / (double) total + " " + total);
+
+    }
+
+    @Test
     @Ignore
     public void countSuccesses() throws Exception {
-
         Random random = new Random();
         int[] V = new int[100000];
         for (int k = 0; k < 10000; k++) {

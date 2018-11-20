@@ -40,17 +40,12 @@ public class SlowGraphConnectivity {
         return M[0].bytes() * n + 8;
     }
 
-    public int components() {
-        return components(n, d);
-    }
-
-    public int components(int nodes, int limit) {
+    public int test(int nodes, int limit) {
         uf.init(nodes);
 
-        int layers = limit; //(int) Math.ceil(Math.log(nodes) / Math.log(2));
         int components = nodes;
-        int thisLayer = 0;
-        while (layers-- > 0 && components > 1 && uf.recover(nodes, thisLayer++)) {
+        for (int layer = 0; layer < limit; layer++) {
+            uf.recover(nodes, layer);
             for (int v = 0; v < nodes; v++) {
                 long recovered = uf.E[v];
                 if (recovered >= 0) {
@@ -60,10 +55,11 @@ public class SlowGraphConnectivity {
                     }
                 }
             }
+            if (components == 1) return layer;
         }
 
         assert components >= 1;
-        return components;
+        return limit;
     }
 
     private class UnionFind {
