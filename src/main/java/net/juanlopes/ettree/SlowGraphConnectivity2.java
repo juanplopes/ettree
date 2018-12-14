@@ -1,6 +1,6 @@
 package net.juanlopes.ettree;
 
-public class SlowGraphConnectivity {
+public class SlowGraphConnectivity2 {
     private final L0SamplerJava[] M;
     private long seed;
     private final UnionFind uf;
@@ -9,7 +9,7 @@ public class SlowGraphConnectivity {
     private final int d;
     private final int m;
 
-    public SlowGraphConnectivity(int n, int d, long seed) {
+    public SlowGraphConnectivity2(int n, int d, long seed) {
         this.n = n;
         this.d = d;
         this.m = (int) Math.ceil(2 * Math.log(n) / Math.log(2)) + 5;
@@ -39,13 +39,17 @@ public class SlowGraphConnectivity {
     public int bytes() {
         return M[0].bytes() * n + 8;
     }
-    
-    public int test(int nodes, int limit) {
+
+    public int components() {
+        return components(n, d);
+    }
+
+    public int components(int nodes, int limit) {
         uf.init(nodes);
 
+        int layers = limit;
         int components = nodes;
-        for (int layer = 0; layer < limit; layer++) {
-            uf.recover(nodes, layer);
+        while (layers-- > 0 && components > 1 && uf.recover(nodes, limit)) {
             for (int v = 0; v < nodes; v++) {
                 long recovered = uf.E[v];
                 if (recovered >= 0) {
@@ -55,11 +59,10 @@ public class SlowGraphConnectivity {
                     }
                 }
             }
-            if (components == 1) return layer;
         }
 
         assert components >= 1;
-        return limit;
+        return components;
     }
 
     private class UnionFind {
@@ -83,7 +86,7 @@ public class SlowGraphConnectivity {
 
         public void init(int n) {
             for (int i = 0; i < n; i++) {
-                M[i].clearTo(SlowGraphConnectivity.this.M[i]);
+                M[i].clearTo(SlowGraphConnectivity2.this.M[i]);
                 P[i] = i;
                 S[i] = 1;
             }
@@ -93,7 +96,7 @@ public class SlowGraphConnectivity {
             boolean answer = false;
             for (int i = 0; i < n; i++) {
                 E[i] = P[i] == i ?
-                        M[i].recover(limit, limit + 1) :
+                        M[i].recover(0, limit) :
                         -1;
                 if (E[i] >= 0)
                     answer = true;

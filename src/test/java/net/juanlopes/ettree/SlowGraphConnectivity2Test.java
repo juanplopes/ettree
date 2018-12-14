@@ -3,7 +3,6 @@ package net.juanlopes.ettree;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -14,33 +13,18 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class SlowGraphConnectivityTest {
-    @Test
-    @Ignore
-    public void name2() throws Exception {
-        Random random = new Random();
+import static org.junit.Assert.*;
 
-        long seed = 3755556779405418679L;
-        SlowGraphConnectivity G = new SlowGraphConnectivity(6, 10, seed);
-        Random local = new Random(seed);
-
-        for (int i = 0; i < 6; i++) {
-            for (int j = i - 1; j >= i - 64 && j >= 0; j--)
-                G.addEdge(i, local.nextInt(i));
-        }
-
-        System.out.println(G.test(6, 10));
-    }
-
+public class SlowGraphConnectivity2Test {
     @Test
     @Ignore
     public void name() throws Exception {
-        int nodes = 1000, tests = 2048, d = 7, steps = 50;
+        int nodes = 1000, tests = 512, d = 7, steps = 50;
 
         int step = nodes / steps;
         double R[][] = new double[steps][d + 1];
         int C[][] = new int[steps][d + 1];
-        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
         CountDownLatch finished = new CountDownLatch(tests);
         AtomicLong progress = new AtomicLong(0);
@@ -51,26 +35,32 @@ public class SlowGraphConnectivityTest {
             executor.submit(() -> {
                 try {
                     Random local = new Random(seed);
-                    SlowGraphConnectivity G = new SlowGraphConnectivity(nodes, d, seed);
+                    SlowGraphConnectivity2 G = new SlowGraphConnectivity2(nodes, d, seed);
                     for (int k = 0; k < steps; k++) {
                         int start = k * step;
                         int end = (k + 1) * step;
 
                         for (int i = start; i < end; i++) {
-                            for (int j = i - 1; j >= i - 1 && j >= 0; j--)
-                                G.addEdge(i, j);
+                            for (int j = i - 1; j >= i - 64 && j >= 0; j--)
+                                G.addEdge(i, local.nextInt(i));
 
                             progress.incrementAndGet();
                         }
-                        //System.out.println(G.components(end, i));
+                        for (int i = 1; i <= d; i++) {
+                            try {
+                                //System.out.println(G.components(end, i));
 
-                        int err = G.test(end, d);
-
-                        synchronized (R) {
-                            for (int i = err + 1; i <= d; i++)
-                                R[k][i]++;
-                            for (int i = 1; i <= d; i++)
-                                C[k][i]++;
+                                if (G.components(end, i) == 1) {
+                                    synchronized (R) {
+                                        R[k][i]++;
+                                    }
+                                }
+                                synchronized (C) {
+                                    C[k][i]++;
+                                }
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 } catch (Throwable e) {
@@ -117,5 +107,4 @@ public class SlowGraphConnectivityTest {
             System.out.println((k + 1) * step + line);
         }
     }
-
 }
