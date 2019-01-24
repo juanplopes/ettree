@@ -18,6 +18,61 @@ public class ETTreeTest {
     }
 
     @Test
+    public void testVertexUpdate() throws Exception {
+        ETTree<Slot> tree = new ETTree<>(() -> new Slot(0));
+        Slot slot1 = new Slot(1);
+        int node1 = tree.addNode(slot1);
+        Slot slot2 = new Slot(2);
+        int node2 = tree.addNode(slot2);
+        tree.addEdge(node1, node2);
+
+        assertThat(tree.findValue(node1).sum()).isEqualTo(3);
+
+        slot1.set(42);
+        assertThat(tree.findValue(node1).sum()).isEqualTo(3);
+        tree.notifyNodeUpdate(node1);
+        assertThat(tree.findValue(node1).sum()).isEqualTo(44);
+
+        slot2.set(43);
+        assertThat(tree.findValue(node1).sum()).isEqualTo(44);
+        tree.notifyNodeUpdate(node2);
+        assertThat(tree.findValue(node1).sum()).isEqualTo(85);
+    }
+
+    @Test
+    public void testEdgeUpdate() throws Exception {
+        ETTree<Slot> tree = new ETTree<>(() -> new Slot(0));
+        int node1 = tree.addNode(new Slot(1));
+        int node2 = tree.addNode(new Slot(2));
+
+        Slot slotA = new Slot(0);
+        Slot slotB = new Slot(0);
+
+        long edge = tree.addEdge(node1, node2, slotA, slotB);
+
+        assertThat(tree.findValue(node1).sum()).isEqualTo(3);
+
+        slotA.set(3);
+        slotB.set(4);
+
+        assertThat(tree.findValue(node1).sum()).isEqualTo(3);
+        tree.notifyEdgeUpdate(edge);
+        assertThat(tree.findValue(node1).sum()).isEqualTo(10);
+    }
+
+    @Test
+    public void testUpdate() throws Exception {
+        ETTree<Slot> tree = new ETTree<>(() -> new Slot(0));
+        int node1 = tree.addNode(new Slot(1));
+        int node2 = tree.addNode(new Slot(2));
+        long edge12 = tree.addEdge(node1, node2);
+
+        assertThat(tree.findRoot(node1)).isEqualTo(tree.findRoot(node2));
+        tree.removeEdge(edge12);
+        assertThat(tree.findRoot(node1)).isNotEqualTo(tree.findRoot(node2));
+    }
+
+    @Test
     public void testPairOdd() throws Exception {
         ETTree<Slot> tree = new ETTree<>(() -> new Slot(0));
         int K = 30;

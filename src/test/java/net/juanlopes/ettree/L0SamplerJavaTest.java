@@ -19,6 +19,7 @@ public class L0SamplerJavaTest extends L0SamplerBaseTest<L0SamplerJava> {
     }
 
     @Test
+    @Ignore
     public void playground() throws Exception {
         Random random = new Random();
         int count = 0, total = 0;

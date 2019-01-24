@@ -26,6 +26,25 @@ public class ETTree<T extends Mergeable<T>> {
         return index;
     }
 
+    public void notifyNodeUpdate(int node) {
+        avl.notifyUpdate(nodes[node]);
+    }
+
+    public void notifyForwardEdgeUpdate(long edge) {
+        int a = (int) (edge >>> 32);
+        avl.notifyUpdate(a);
+    }
+
+    public void notifyBackwardsEdgeUpdate(long edge) {
+        int b = (int) edge;
+        avl.notifyUpdate(b);
+    }
+
+    public void notifyEdgeUpdate(long edge) {
+        notifyForwardEdgeUpdate(edge);
+        notifyBackwardsEdgeUpdate(edge);
+    }
+
     public long addEdge(int node1, int node2) {
         return addEdge(node1, node2, emptySupplier.get());
     }
@@ -44,7 +63,7 @@ public class ETTree<T extends Mergeable<T>> {
 
         avl.link(avl.link(left, a, mid), b, right);
 
-        return (long) a << 32 | b;
+        return (((long) a) << 32) | b;
     }
 
     private int reroot(int child) {
@@ -61,7 +80,7 @@ public class ETTree<T extends Mergeable<T>> {
     }
 
     public void removeEdge(long id) {
-        int a = (int) (id >> 32);
+        int a = (int) (id >>> 32);
         int b = (int) id;
 
         int leftA = avl.cutToRight(a);
