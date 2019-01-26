@@ -6,28 +6,17 @@ import java.util.function.Supplier;
 public class ETTree<T extends Mergeable<T>> {
     private final AVLForest<T> avl = new AVLForest<>();
     private final Supplier<T> emptySupplier;
-    private int[] nodes = new int[16];
-    private int count = 0;
 
     public ETTree(Supplier<T> emptySupplier) {
         this.emptySupplier = emptySupplier;
     }
 
-    private void ensureNodesSize(int size) {
-        int newSize = 2 * Integer.highestOneBit(size - 1);
-        if (newSize > nodes.length)
-            nodes = Arrays.copyOf(nodes, newSize);
-    }
-
     public int addNode(T obj) {
-        ensureNodesSize(count + 1);
-        int index = count++;
-        nodes[index] = avl.add(obj);
-        return index;
+        return avl.add(obj);
     }
 
     public void notifyNodeUpdate(int node) {
-        avl.notifyUpdate(nodes[node]);
+        avl.notifyUpdate(node);
     }
 
     public void notifyForwardEdgeUpdate(long edge) {
@@ -54,8 +43,8 @@ public class ETTree<T extends Mergeable<T>> {
     }
 
     public long addEdge(int node1, int node2, T forward, T backward) {
-        int left = nodes[node1];
-        int mid = reroot(nodes[node2]);
+        int left = node1;
+        int mid = reroot(node2);
         int right = avl.cutToLeft(left);
 
         int a = avl.add(forward);
@@ -72,11 +61,11 @@ public class ETTree<T extends Mergeable<T>> {
     }
 
     public int findRoot(int node) {
-        return avl.rootOf(nodes[node]);
+        return avl.rootOf(node);
     }
 
     public T findValue(int node) {
-        return avl.value(avl.rootOf(nodes[node]));
+        return avl.value(avl.rootOf(node));
     }
 
     public void removeEdge(long id) {
