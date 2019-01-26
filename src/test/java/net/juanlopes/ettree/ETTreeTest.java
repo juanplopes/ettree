@@ -115,5 +115,25 @@ public class ETTreeTest {
         assertThat(tree.findValue(nodes[1]).sum()).isEqualTo(K * K + K);
     }
 
+    @Test
+    public void testThreeEdges() throws Exception {
+        ETTree<Slot> tree = new ETTree<>(() -> new Slot(0));
+        int n0 = tree.addNode(new Slot(1));
+        int n1 = tree.addNode(new Slot(2));
+        int n2 = tree.addNode(new Slot(3));
 
+        long e1 = tree.addEdge(n0, n1);
+        long e2 = tree.addEdge(n1, n2);
+        tree.removeEdge(e1);
+        tree.addEdge(n0, n2);
+        tree.removeEdge(e2);
+
+        System.out.println(tree.findValue(n0).sum());
+        System.out.println(tree.findValue(n1).sum());
+        System.out.println(tree.findValue(n2).sum());
+
+        assertThat(tree.findValue(n0).sum()).isEqualTo(4);
+        assertThat(tree.findValue(n1).sum()).isEqualTo(2);
+        assertThat(tree.findValue(n2).sum()).isEqualTo(4);
+    }
 }
