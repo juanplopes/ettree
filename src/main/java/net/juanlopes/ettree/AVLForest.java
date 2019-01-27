@@ -132,7 +132,7 @@ public class AVLForest<T extends Mergeable<T>> {
         return balanceTree(root);
     }
 
-    private int unlink(int node) {
+    private int unlinkConsideringItIsTheRightmost(int node) {
         int parentNode = parent[node];
         if (parentNode < 0 && left[node] < 0) return -1;
 
@@ -159,7 +159,7 @@ public class AVLForest<T extends Mergeable<T>> {
         if (node2 < 0) return node1;
 
         int root = findRightmost(node1);
-        node1 = unlink(root);
+        node1 = unlinkConsideringItIsTheRightmost(root);
 
         return linkWithRoot(node1, root, node2);
     }

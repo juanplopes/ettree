@@ -26,7 +26,11 @@ public class FastGraphConnectivity {
     }
 
     public int components() {
-        return n - edges.size();
+        return components(n);
+    }
+
+    public int components(int end) {
+        return end - edges.size();
     }
 
     public long addEdge(int a, int b) {
