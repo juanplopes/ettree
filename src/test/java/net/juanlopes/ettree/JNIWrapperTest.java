@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.math.BigInteger;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
 
 public class JNIWrapperTest extends JNIWrapper {
     @Test
@@ -51,5 +52,12 @@ public class JNIWrapperTest extends JNIWrapper {
         r = BigInteger.valueOf(0).add(BigInteger.valueOf(3).multiply(BigInteger.valueOf(r)).mod(BigInteger.valueOf(p))).longValue();
 
         assertThat(JNIWrapper.powm(3, a, b)).isEqualTo(r).isEqualTo(4125482591540598862L);
+    }
+
+    @Test
+    public void testFailInitialize() throws Exception {
+        assertThatThrownBy(() -> JNIWrapper.initialize("what?"))
+                .isInstanceOf(RuntimeException.class)
+                .hasCauseInstanceOf(NullPointerException.class);
     }
 }

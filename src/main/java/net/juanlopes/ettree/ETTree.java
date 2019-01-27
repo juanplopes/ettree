@@ -1,6 +1,5 @@
 package net.juanlopes.ettree;
 
-import java.util.Arrays;
 import java.util.function.Supplier;
 
 public class ETTree<T extends Mergeable<T>> {
@@ -55,7 +54,7 @@ public class ETTree<T extends Mergeable<T>> {
         return (((long) a) << 32) | b;
     }
 
-    private int reroot(int child) {
+    public int reroot(int child) {
         int childLeft = avl.cutToRight(child);
         return avl.link(child, childLeft);
     }

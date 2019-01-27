@@ -1,12 +1,9 @@
 package net.juanlopes.ettree;
 
-import java.io.File;
 import java.io.InputStream;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.stream.StreamSupport;
 
 public abstract class JNIWrapper {
     public static final long P = 4611686018427387847L;
@@ -26,11 +23,15 @@ public abstract class JNIWrapper {
     public static native long recover(long instance, int start, int end);
 
     static {
+        initialize("/libl0sampler.so");
+    }
+
+    public static void initialize(String lib) {
         try {
             Path path = Files.createTempFile("libl0sampler", "");
             path.toFile().deleteOnExit();
 
-            try (InputStream stream = JNIWrapper.class.getResourceAsStream("/libl0sampler.so")) {
+            try (InputStream stream = JNIWrapper.class.getResourceAsStream(lib)) {
                 Files.copy(stream, path, StandardCopyOption.REPLACE_EXISTING);
             }
             System.load(path.toString());

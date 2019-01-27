@@ -95,6 +95,26 @@ public class AVLForestTest {
     }
 
     @Test
+    public void testFailingLinkCase() throws Exception {
+        AVLForest<Slot> forest = new AVLForest<>();
+
+        int A = forest.add(new Slot(1, "A"));
+        int B = forest.add(new Slot(2, "B"));
+        int C = forest.add(new Slot(3, "C"));
+        int D = forest.add(new Slot(4, "D"));
+
+        forest.link(A, B, -1);
+        forest.link(C, D, -1);
+        System.out.println(ForestAssert.print(forest));
+        forest.link(A, D);
+        System.out.println(ForestAssert.print(forest));
+
+        new ForestAssert()
+                .component(A, B, C, D)
+                .check(forest);
+    }
+
+    @Test
     public void testLinkWithRootSingleLeft() throws Exception {
         AVLForest<Slot> forest = new AVLForest<>();
 

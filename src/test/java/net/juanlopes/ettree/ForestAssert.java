@@ -87,22 +87,28 @@ public class ForestAssert {
                 builder.append("v").append(i).append("[label=\"").append(forest.value(i)).append("\"];");
         }
 
-        boolean[] visited = new boolean[forest.count()];
         for (int i = 0; i < forest.count(); i++) {
             if (forest.isRoot(i))
-                print(builder, forest, -1, i);
+                print(builder, forest, -1, i, true);
         }
 
         return builder.append("}").toString();
     }
 
-    private static void print(StringBuilder builder, AVLForest<?> forest, int p, int v) {
-        if (v < 0) return;
+    private static void print(StringBuilder builder, AVLForest<?> forest, int p, int v, boolean left) {
+        if (v < 0) {
+            String name = "null" + p + (left ? "L" : "R");
+            builder.append(name).append("[shape=point];");
+            builder.append("v").append(p).append("->").append(name).append(";");
+            return;
+        }
         if (p >= 0)
             builder.append("v").append(p).append("->").append("v").append(v).append(";");
 
-        print(builder, forest, v, forest.left(v));
-        print(builder, forest, v, forest.right(v));
+        if (forest.left(v) >= 0 || forest.right(v) >= 0) {
+            print(builder, forest, v, forest.left(v), true);
+            print(builder, forest, v, forest.right(v), false);
+        }
     }
 
 }

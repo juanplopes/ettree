@@ -136,4 +136,17 @@ public class ETTreeTest {
         assertThat(tree.findValue(n1).sum()).isEqualTo(2);
         assertThat(tree.findValue(n2).sum()).isEqualTo(4);
     }
+
+    @Test
+    public void testSimpleEdges() throws Exception {
+        ETTree<Slot> tree = new ETTree<>(() -> new Slot(0));
+
+        int n0 = tree.addNode(new Slot(1, "AA"));
+        int n1 = tree.addNode(new Slot(2, "BB"));
+        tree.addEdge(n0, n1, new Slot(0, "AB"), new Slot(0, "BA"));
+        tree.reroot(n1);
+
+        assertThat(tree.findValue(n0).sum()).isEqualTo(3);
+        assertThat(tree.findValue(n1).sum()).isEqualTo(3);
+    }
 }

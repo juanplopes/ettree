@@ -134,7 +134,16 @@ public class AVLForest<T extends Mergeable<T>> {
 
     private int unlink(int node) {
         int parentNode = parent[node];
-        if (parentNode < 0) return -1;
+        if (parentNode < 0 && left[node] < 0) return -1;
+
+        if (parentNode < 0) {
+            int answer = left[node];
+
+            left[node] = parent[answer] = -1;
+            update(node);
+
+            return answer;
+        }
 
         right[parentNode] = left[node];
         update(parentNode);

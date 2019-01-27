@@ -37,7 +37,6 @@ public class FastGraphConnectivity {
         updateNodes(aa, bb, 1);
 
         if (tree.findRoot(ids[aa]) != tree.findRoot(ids[bb])) {
-            System.out.println("ADD " + aa + " " + bb);
             edges.put(edge, tree.addEdge(ids[aa], ids[bb]));
         }
 
@@ -57,7 +56,6 @@ public class FastGraphConnectivity {
 
             Node va = tree.findValue(ids[aa]);
             Node vb = tree.findValue(ids[bb]);
-            System.out.println("DEL " + aa + " " + bb);
 
             if (va.size > vb.size) {
                 Node vc = va;
@@ -79,7 +77,6 @@ public class FastGraphConnectivity {
         int ea = (int) (recovered / n);
         int eb = (int) (recovered % n);
 
-        System.out.println("ADDX " + ea + " " + eb);
         edges.put(recovered, tree.addEdge(ids[ea], ids[eb]));
         return true;
 
